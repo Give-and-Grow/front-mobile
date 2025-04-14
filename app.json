@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "front-mobile",
+    "slug": "front-mobile",
+    "newArchEnabled": true,
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "navigation": {
+      "deepLinking": {
+        "prefixes": ["myapp://"]
+      }
+    },
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "hermes": false,
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ],
+        "UIUserInterfaceStyle": "light",
+        "NSUserTrackingUsageDescription": "We need your permission to send notifications"
+      },
+      "bundleIdentifier": "marwa"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "hermes": false,
+      "permissions": [
+        "NOTIFICATIONS"
+      ],
+      "package": "com.marwa2712.front-mobile"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d09cb3e0-e651-4b8c-9493-bc397f37bea4"
+      }
+    },
+    "notification": {
+      "icon": "./assets/images/apply.JPG"  
+    }
+  }
+}
