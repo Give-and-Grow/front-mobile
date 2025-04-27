@@ -9,6 +9,7 @@ import {
     Alert,
 } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // لاستعمال AsyncStorage
 
 const images = [
     require('../assets/images/volunter1.jpg'),
@@ -42,21 +43,21 @@ const LoginScreen = ({ navigation }) => {
         }, 3000);
         return () => clearInterval(interval);
     }, [fadeAnim]);
-    
+
     const handleLogin = async () => {
         try {
-            console.log("kkkkkkkkkkkkkkkkkk");
             console.log('Sending login request with:', { username, password });
 
             const response = await axios.post('http://192.168.1.107:5000/auth/login', {
                 username,
                 password,
             });
-            console.log("oooooooooooooooooooooo");
+
             console.log('Server response:', response.data);
-            console.log(response.data);
-            console.log("gggggggggggg");
+
             if (response.status === 200) {
+                // Store the token in AsyncStorage
+                await AsyncStorage.setItem('userToken', response.data.token);
                 Alert.alert('Success', 'Login successful!');
                 navigation.navigate('homepage');
             } else {

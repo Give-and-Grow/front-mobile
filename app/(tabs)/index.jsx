@@ -15,7 +15,8 @@ import LoginScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/LoginScr
 import SinupScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SinupScreen.jsx';
 import homepage from 'C:/Users/user/Videos/SOFT/front-mobile/screens/homepage.jsx';
 import ResetPasswordScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ResetPasswordScreen.jsx';
-
+import ProfileScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ProfileScreen.jsx';
+import ChangePasswordProfile from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChangePasswordProfile.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -31,7 +32,8 @@ const Index = () => {
         <Stack.Screen name="SinupScreen" component={SinupScreen} />
         <Stack.Screen name="homepage" component={homepage} />
         <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
-       
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Stack.Screen name="ChangePasswordProfile" component={ChangePasswordProfile} />
       </Stack.Navigator>
     </NavigationContainer>
   );

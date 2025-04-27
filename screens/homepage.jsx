@@ -13,11 +13,13 @@ import {
   Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('window').width;
 
 const Homepage = () => {
   const [showMenu, setShowMenu] = useState(false);
+  const navigation = useNavigation(); // الوصول إلى التنقل
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -32,6 +34,11 @@ const Homepage = () => {
 
         <TouchableOpacity onPress={() => setShowMenu(!showMenu)} style={styles.menuButton}>
           <Icon name="bars" size={25} color="#66bb6a" />
+        </TouchableOpacity>
+
+        {/* Profile Button */}
+        <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')} style={styles.profileButton}>
+          <Icon name="user" size={25} color="#66bb6a" />
         </TouchableOpacity>
 
         {showMenu && (
@@ -100,7 +107,7 @@ const Homepage = () => {
         }, {
           id: '03',
           title: 'Grow',
-         image: require('../assets/images/volunter1.jpg'),
+          image: require('../assets/images/volunter1.jpg'),
           description: 'Rediscover your ability to profoundly impact others, your team and create more meaning in your own life.',
         }].map((step, index) => (
           <View key={index} style={styles.stepBox}>
@@ -136,12 +143,22 @@ export default Homepage;
 
 const styles = StyleSheet.create({
   headerContainer: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', paddingVertical: 10, paddingHorizontal: 15, borderBottomWidth: 1, borderBottomColor: '#ddd', position: 'relative', zIndex: 10,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    backgroundColor: '#fff', 
+    paddingVertical: 10, 
+    paddingHorizontal: 15, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#ddd', 
+    position: 'relative', 
+    zIndex: 10,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
   logo: { width: 30, height: 30, marginRight: 8 },
   logoText: { fontSize: 15, fontWeight: 'italic', color: '#003366' },
   menuButton: { padding: 10 },
+  profileButton: { padding: 10 },
   menuDropdown: { position: 'absolute', top: 60, right: 15, backgroundColor: '#fff', borderRadius: 6, borderColor: '#ccc', borderWidth: 1, width: 200, elevation: 6, zIndex: 999 },
   menuItem: { paddingVertical: 12, paddingHorizontal: 15, borderBottomColor: '#eee', borderBottomWidth: 1, fontSize: 14, color: '#14752e' },
   background: { flex: 1, justifyContent: 'center' },
@@ -168,15 +185,14 @@ const styles = StyleSheet.create({
     marginTop: -0,
     position: 'absolute',
     top: -20,
-    textAlign: 'center',  // لجعل الرقم في المنتصف
-    textShadowColor: '#000',  // لون الظل
-    textShadowOffset: { width: 2, height: 2 },  // اتجاه الظل
-    textShadowRadius: 6,  // مدى الظل
-    fontFamily: 'Cursive',  // خط مزخرف
-  fontStyle: 'italic',  // استخدام الخط الإيطالي
-    letterSpacing: 2,  // زيادة المسافة بين الحروف
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 6,
+    fontFamily: 'Cursive',
+    fontStyle: 'italic',
+    letterSpacing: 2,
   },
-  
   stepTitle: { fontSize: 22, fontWeight: '600', marginVertical: 6, color: '#000' },
   stepDescription: { fontSize: 14, textAlign: 'center', color: '#333', lineHeight: 20 },
   applyButton: { backgroundColor: '#14752e', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 6, marginTop: 10 },
