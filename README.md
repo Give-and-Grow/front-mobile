@@ -23,6 +23,7 @@ backend:
 cd Backend
 git branch
 venv\Scripts\activate
+git pull origin main
 pip install -r requirements.txt
 flask db upgrade
 بنشوف الداتا بيس
