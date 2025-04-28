@@ -17,6 +17,9 @@ import homepage from 'C:/Users/user/Videos/SOFT/front-mobile/screens/homepage.js
 import ResetPasswordScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ResetPasswordScreen.jsx';
 import ProfileScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ProfileScreen.jsx';
 import ChangePasswordProfile from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChangePasswordProfile.jsx';
+import singuporganization from 'C:/Users/user/Videos/SOFT/front-mobile/screens/singuporganization.jsx';
+import SelectUserType from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SelectUserType.jsx';
+import SignupFlow from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SignupFlow.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -34,6 +37,9 @@ const Index = () => {
         <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
         <Stack.Screen name="ChangePasswordProfile" component={ChangePasswordProfile} />
+        <Stack.Screen name="singuporganization" component={singuporganization} />
+        <Stack.Screen name="SelectUserType" component={SelectUserType} />
+        <Stack.Screen name="SignupFlow" component={SignupFlow} />
       </Stack.Navigator>
     </NavigationContainer>
   );
