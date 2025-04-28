@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image
 } from 'react-native';
 
-const SinupScreen = ({ navigation }) => {
+const SinupScreen = ({ role }) => {
   const [username, setUsername] = useState('');
   const [step, setStep] = useState(1);
   const [firstName, setFirstName] = useState('');
@@ -37,6 +37,7 @@ const SinupScreen = ({ navigation }) => {
           year,
           gender,
           phone_number: phone,
+          role: role,
         }),
       });
 

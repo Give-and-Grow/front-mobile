@@ -105,7 +105,7 @@ const LoginScreen = ({ navigation }) => {
                 </TouchableOpacity>
 
                 <View style={styles.footer}>
-                    <TouchableOpacity onPress={() => navigation.navigate('SinupScreen')}>
+                    <TouchableOpacity onPress={() => navigation.navigate('SignupFlow')}>
                         <Text style={[styles.footerText, styles.footerLink]}>
                             Don't have an account? Sign Up
                         </Text>
