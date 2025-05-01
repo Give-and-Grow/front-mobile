@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const ResetPasswordScreen = ({ navigation }) => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
  const handleRequestCode = async () => {
     if (!email) {
@@ -62,69 +64,83 @@ const ResetPasswordScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../assets/images/restPasssword.png')}
-        style={styles.headerImage}
-        resizeMode="contain"
-      />
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <Image
+          source={require('../assets/images/restPasssword.png')}
+          style={styles.headerImage}
+          resizeMode="contain"
+        />
 
-      <View style={styles.progressContainer}>
-        <View style={[styles.progressStep, step >= 1 && styles.activeStep]} />
-        <View style={[styles.progressStep, step >= 2 && styles.activeStep]} />
+        <View style={styles.progressContainer}>
+          <View style={[styles.progressStep, step >= 1 && styles.activeStep]} />
+          <View style={[styles.progressStep, step >= 2 && styles.activeStep]} />
+        </View>
+
+        {step === 1 ? (
+          <>
+            <Text style={styles.title}>Reset Password</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail" size={24} color="#388e3c" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your Email"
+                placeholderTextColor="#aaa"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+              />
+            </View>
+            <TouchableOpacity style={styles.button} onPress={handleRequestCode}>
+              <Text style={styles.buttonText}>Send Code</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <Text style={styles.title}>Enter Code & New Password</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="code" size={24} color="#388e3c" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Verification Code"
+                placeholderTextColor="#aaa"
+                value={code}
+                onChangeText={setCode}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={styles.passwordContainer}>
+              <Ionicons name="lock-closed" size={24} color="#388e3c" style={styles.icon} />
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="New Password"
+                placeholderTextColor="#aaa"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                <Ionicons
+                  name={showPassword ? 'eye' : 'eye-off'}
+                  size={23}
+                  color="#388e3c"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+              <Text style={styles.buttonText}>Reset Password</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
-
-      {step === 1 ? (
-        <>
-          <Text style={styles.title}>Reset Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your Email"
-            placeholderTextColor="#aaa"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-          <TouchableOpacity style={styles.button} onPress={handleRequestCode}>
-            <Text style={styles.buttonText}>Send Code</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Text style={styles.title}>Enter Code & New Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Verification Code"
-            placeholderTextColor="#aaa"
-            value={code}
-            onChangeText={setCode}
-            keyboardType="numeric"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="New Password"
-            placeholderTextColor="#aaa"
-            value={newPassword}
-            onChangeText={setNewPassword}
-            secureTextEntry
-          />
-          <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
-            <Text style={styles.buttonText}>Reset Password</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#E8F5E9',
-  },
+ 
   headerImage: {
     width: 200,
     height: 200,
@@ -137,40 +153,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#66bb6a',
   },
-  input: {
+  inputContainer: {
     width: '100%',
-    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
     borderColor: '#1B5E20',
     borderWidth: 2,
     borderRadius: 25,
-    paddingLeft: 15,
-    marginBottom: 15,
-    fontSize: 16,
     backgroundColor: '#FFFFFF',
+    paddingLeft: 15,
+    paddingRight: 15,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
     elevation: 3,
   },
-  button: {
-    width: '100%',
-    backgroundColor: '#66bb6a',
-    paddingVertical: 15,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 4,
+  icon: {
+    marginRight: 10,
   },
-  buttonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: 'bold',
+  input: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
   },
+
   progressContainer: {
     flexDirection: 'row',
     marginBottom: 30,
@@ -185,6 +193,65 @@ const styles = StyleSheet.create({
   },
   activeStep: {
     backgroundColor: '#66bb6a',
+  },
+  passwordContainer: {
+    width: '100%',
+    height: 50,
+    borderColor: '#1B5E20',
+    borderWidth: 2,
+    borderRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingLeft: 15,
+    paddingRight: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  passwordInput: {
+    flex: 1,
+    fontSize: 16,
+  },
+  eyeIcon: {
+    paddingLeft: 10,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#E8F5E9',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 20, // Optional, to ensure the content is well spaced on smaller screens
+  },
+  button: {
+    width: '100%', // تأكد من أن الزر يشغل كامل العرض
+    maxWidth: 350, // يمكنك تحديد حد أقصى للعرض
+    backgroundColor: '#66bb6a',
+    paddingVertical: 20,  // زيادة المسافة الرأسية داخل الزر
+    paddingHorizontal: 40,  // زيادة المسافة الأفقية داخل الزر
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 4,
+    height: 60,  // زيادة ارتفاع الزر
+  },
+  buttonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // لاستعمال AsyncStorage
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const images = [
     require('../assets/images/volunter1.jpg'),
@@ -23,6 +24,8 @@ const LoginScreen = ({ navigation }) => {
     const [passwordFocused, setPasswordFocused] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+
     const [imageIndex, setImageIndex] = useState(0);
     const fadeAnim = new Animated.Value(1);
 
@@ -83,24 +86,42 @@ const LoginScreen = ({ navigation }) => {
                     Join Us {'\n'} be the change you want {'\n'} to see in the world
                 </Text>
 
-                <TextInput
-                    style={[styles.input, usernameFocused && styles.focusedInput]}
-                    placeholder="Username"
-                    value={username}
-                    onChangeText={setUsername}
-                    onFocus={() => setUsernameFocused(true)}
-                    onBlur={() => setUsernameFocused(false)}
-                    autoCapitalize="none"
-                />
-                <TextInput
-                    style={[styles.input, passwordFocused && styles.focusedInput]}
-                    placeholder="Password"
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                    onFocus={() => setPasswordFocused(true)}
-                    onBlur={() => setPasswordFocused(false)}
-                />
+                <View style={styles.inputContainer}>
+    <Ionicons name="person" size={22} color="#14752e" style={styles.inputIcon} />
+    <TextInput
+        style={[styles.inputField, usernameFocused && styles.focusedInput]}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+        onFocus={() => setUsernameFocused(true)}
+        onBlur={() => setUsernameFocused(false)}
+        autoCapitalize="none"
+    />
+</View>
+
+<View style={styles.inputContainer}>
+    <Ionicons name="lock-closed" size={22} color="#14752e" style={styles.inputIcon} />
+    <TextInput
+        style={[styles.inputField, passwordFocused && styles.focusedInput]}
+        placeholder="Password"
+        secureTextEntry={!showPassword}
+        value={password}
+        onChangeText={setPassword}
+        onFocus={() => setPasswordFocused(true)}
+        onBlur={() => setPasswordFocused(false)}
+    />
+    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+        <Ionicons
+            name={showPassword ? 'eye' : 'eye-off'}
+            size={23}
+            color="#14752e"
+            style={styles.eyeIcon}
+        />
+    </TouchableOpacity>
+</View>
+
+
+
 
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
@@ -194,6 +215,39 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#4cd971',
     },
+    passwordContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        borderWidth: 2,
+        borderColor: '#14752e',
+        marginBottom: 15,
+        paddingHorizontal: 10,
+    },
+    eyeIcon: {
+        marginLeft: 10,
+    },
+    inputContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        borderWidth: 2,
+        borderColor: '#14752e',
+        marginBottom: 15,
+        paddingHorizontal: 10,
+    },
+    inputIcon: {
+        marginRight: 10,
+    },
+    inputField: {
+        flex: 1,
+        paddingVertical: 10,
+    },
+    
 });
 
 export default LoginScreen;
