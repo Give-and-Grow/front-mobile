@@ -20,6 +20,9 @@ const screenWidth = Dimensions.get('window').width;
 const homepage = () => {
   const [showMenu, setShowMenu] = useState(false);
   const [userType, setUserType] = useState(null); // 'volunteer' or 'organization'
+  const [opportunities, setOpportunities] = useState([]);
+  const [loadingOpps, setLoadingOpps] = useState(true);
+  const [errorOpps, setErrorOpps] = useState(null);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -33,9 +36,11 @@ const homepage = () => {
         console.error('Error retrieving user role:', error);
       }
     };
-
+    
     getUserRole();
-  }, []);
+  }, []
+
+);
 
   const handleProfilePress = () => {
     if (!userType) {
@@ -147,6 +152,33 @@ const homepage = () => {
           </View>
         ))}
       </View>
+      {userType === 'organization' && (
+  <View >
+    {/* Add Volunteering Opportunity Button */}
+    <TouchableOpacity
+      style={styles.opportunityListButton}
+      onPress={() => navigation.navigate('CreatevolunterOpportunity')}
+    >
+      <Text style={styles.opportunityListButtonText}>➕   Add Volunteering Opportunity</Text>
+    </TouchableOpacity>
+
+    {/* Add Job Opportunity Button */}
+    <TouchableOpacity
+      style={styles.opportunityListButton}
+      onPress={() => navigation.navigate('CreateJobOpportunity')}
+    >
+      <Text style={styles.opportunityListButtonText}>➕    Add Job Opportunity</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+  style={styles.opportunityListButton}
+  onPress={() => navigation.navigate('OpportunityList')}
+>
+  <Text style={styles.opportunityListButtonText}>📋 View All Opportunities</Text>
+</TouchableOpacity>
+
+  </View>
+)}
+
     </ScrollView>
   );
 };
@@ -296,6 +328,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
   },
+  opportunityListButton: {
+    margin: 20,
+    padding: 12,
+    backgroundColor: '#66bb6a',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  opportunityListButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  
 });
 
 export default homepage;
