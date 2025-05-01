@@ -20,8 +20,10 @@ import ChangePasswordProfile from 'C:/Users/user/Videos/SOFT/front-mobile/screen
 import singuporganization from 'C:/Users/user/Videos/SOFT/front-mobile/screens/singuporganization.jsx';
 import SelectUserType from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SelectUserType.jsx';
 import SignupFlow from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SignupFlow.jsx';
-
+import OpportunityList from 'C:/Users/user/Videos/SOFT/front-mobile/screens/OpportunityList.jsx';
 import ProfileOrganizationScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ProfileOrganizationScreen.jsx';
+import CreatevolunterOpportunity from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CreatevolunterOpportunity.jsx';
+import CreateJobOpportunity from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CreateJobOpportunity.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -43,7 +45,9 @@ const Index = () => {
         <Stack.Screen name="SelectUserType" component={SelectUserType} />
         <Stack.Screen name="SignupFlow" component={SignupFlow} />
         <Stack.Screen name="ProfileOrganizationScreen" component={ProfileOrganizationScreen} />
-       
+        <Stack.Screen name="OpportunityList" component={OpportunityList} />
+        <Stack.Screen name="CreatevolunterOpportunity" component={CreatevolunterOpportunity} />
+        <Stack.Screen name="CreateJobOpportunity" component={CreateJobOpportunity} />
       </Stack.Navigator>
     </NavigationContainer>
   );
