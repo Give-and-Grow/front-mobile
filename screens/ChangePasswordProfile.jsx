@@ -5,10 +5,12 @@ import {
   TextInput, 
   StyleSheet, 
   TouchableOpacity, 
-  Alert 
+  Alert, 
+  Image 
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ChangePasswordProfile = ({ navigation }) => {
   const [oldPassword, setOldPassword] = useState('');
@@ -16,42 +18,48 @@ const ChangePasswordProfile = ({ navigation }) => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const handleGotologin= () => {
+    // Navigate to the next screen (e.g., Login or Registration)
+    navigation.navigate('LoginScreen'); // Change 'Login' to your desired screen
+  };
   const handlePasswordChange = async () => {
-    // Check for empty fields before sending
     if (!oldPassword || !newPassword || !confirmNewPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-  
+
     if (newPassword !== confirmNewPassword) {
       Alert.alert('Error', 'New password and confirm password do not match');
       return;
     }
-  
+
     if (newPassword.length < 6) {
       Alert.alert('Error', 'New password should be at least 6 characters long');
       return;
     }
-  
+
     setIsLoading(true);
-  
+
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) {
         Alert.alert('Error', 'No token found, please log in again');
         return;
       }
-  
+
       const response = await axios.put('http://192.168.1.107:5000/profile/change-password', {
         old_password: oldPassword,
         new_password: newPassword,
-        confirm_new_password: confirmNewPassword,  // Include this line
+        confirm_new_password: confirmNewPassword,
       }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (response.status === 200) {
         Alert.alert('Success', 'Password changed successfully!');
         navigation.navigate('LoginScreen');
@@ -65,35 +73,72 @@ const ChangePasswordProfile = ({ navigation }) => {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <View style={styles.container}>
+      <Image 
+        source={require('../assets/images/animationchangepassword-unscreen.gif')}
+        style={styles.topImage}
+        resizeMode="contain"
+      />
       <Text style={styles.title}>Change Your Password</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Old Password"
-        secureTextEntry
-        value={oldPassword}
-        onChangeText={setOldPassword}
-      />
+      {/* Old Password */}
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Old Password"
+          secureTextEntry={!showOldPassword}
+          value={oldPassword}
+          onChangeText={setOldPassword}
+        />
+        <TouchableOpacity onPress={() => setShowOldPassword(!showOldPassword)}>
+        <Icon
+            name={showOldPassword ? 'eye' : 'eye-off'}
 
-      <TextInput
-        style={styles.input}
-        placeholder="New Password"
-        secureTextEntry
-        value={newPassword}
-        onChangeText={setNewPassword}
-      />
+            size={22}
+            color="#14752e"
+          />
+        </TouchableOpacity>
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm New Password"
-        secureTextEntry
-        value={confirmNewPassword}
-        onChangeText={setConfirmNewPassword}
-      />
+      {/* New Password */}
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="New Password"
+          secureTextEntry={!showNewPassword}
+          value={newPassword}
+          onChangeText={setNewPassword}
+        />
+        <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
+        <Icon
+           name={showOldPassword ? 'eye' : 'eye-off'}
+
+            size={22}
+            color="#14752e"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Confirm New Password */}
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Confirm New Password"
+          secureTextEntry={!showConfirmPassword}
+          value={confirmNewPassword}
+          onChangeText={setConfirmNewPassword}
+        />
+        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+        <Icon
+            name={showOldPassword ? 'eye' : 'eye-off'}
+
+            size={22}
+            color="#14752e"
+          />
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity
         style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -107,7 +152,7 @@ const ChangePasswordProfile = ({ navigation }) => {
 
       <TouchableOpacity
         style={styles.link}
-        onPress={() => navigation.goBack()}
+        onPress={handleGotologin}
       >
         <Text style={styles.linkText}>Back to Login</Text>
       </TouchableOpacity>
@@ -123,6 +168,11 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#E8F5E9',
   },
+  topImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 20,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -130,14 +180,20 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     textAlign: 'center',
   },
-  input: {
+  passwordContainer: {
     width: '100%',
-    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 25,
     borderWidth: 2,
     borderColor: '#14752e',
+    paddingHorizontal: 10,
     marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 10,
   },
   button: {
     backgroundColor: '#66bb6a',

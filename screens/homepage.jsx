@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,16 +10,46 @@ import {
   StatusBar,
   Dimensions,
   ScrollView,
-  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 
-const Homepage = () => {
+const homepage = () => {
   const [showMenu, setShowMenu] = useState(false);
-  const navigation = useNavigation(); // الوصول إلى التنقل
+  const [userType, setUserType] = useState(null); // 'volunteer' or 'organization'
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    // Retrieve the user's role from AsyncStorage to automatically set the user type
+    const getUserRole = async () => {
+      try {
+        const role = await AsyncStorage.getItem('userRole');
+        setUserType(role); // Set userType based on the stored role
+        console.log('Retrieved role:', role);
+      } catch (error) {
+        console.error('Error retrieving user role:', error);
+      }
+    };
+
+    getUserRole();
+  }, []);
+
+  const handleProfilePress = () => {
+    if (!userType) {
+      alert('Please select a user type first');
+      return;
+    }
+    if (userType === 'user') {
+      navigation.navigate('ProfileScreen');
+    } else if (userType === 'organization') {
+      navigation.navigate('ProfileOrganizationScreen');
+    } else {
+      console.log('No user type selected');
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -37,7 +67,7 @@ const Homepage = () => {
         </TouchableOpacity>
 
         {/* Profile Button */}
-        <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')} style={styles.profileButton}>
+        <TouchableOpacity onPress={handleProfilePress} style={styles.profileButton}>
           <Icon name="user" size={25} color="#66bb6a" />
         </TouchableOpacity>
 
@@ -58,7 +88,7 @@ const Homepage = () => {
           <Text style={styles.title}>Remarkable Network</Text>
           <Text style={styles.subtitle}>
             VolunteerMatch is the largest network in the nonprofit world, with the most
-            volunteers, nonprofits and opportunities to make a difference.
+            volunteers, nonprofits, and opportunities to make a difference.
           </Text>
 
           <View style={styles.searchContainer}>
@@ -108,98 +138,164 @@ const Homepage = () => {
           id: '03',
           title: 'Grow',
           image: require('../assets/images/volunter1.jpg'),
-          description: 'Rediscover your ability to profoundly impact others, your team and create more meaning in your own life.',
-        }].map((step, index) => (
-          <View key={index} style={styles.stepBox}>
+          description: 'Rediscover your purpose by giving back to the community. Make a lasting impact.',
+        }].map((step) => (
+          <View key={step.id} style={styles.stepCard}>
             <Image source={step.image} style={styles.stepImage} />
-            <Text style={styles.stepNumber}>{step.id}</Text>
             <Text style={styles.stepTitle}>{step.title}</Text>
             <Text style={styles.stepDescription}>{step.description}</Text>
           </View>
         ))}
-
-        <TouchableOpacity style={styles.applyButton}>
-          <Text style={styles.applyButtonText}>APPLY HERE</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Social Media Section */}
-      <View style={styles.socialSection}>
-        <Text style={styles.socialTitle}>Follow Us!</Text>
-        <View style={styles.socialDivider} />
-        <View style={styles.iconRow}>
-          {['facebook', 'twitter', 'youtube-play', 'linkedin', 'instagram'].map((icon, i) => (
-            <TouchableOpacity key={i} onPress={() => Linking.openURL(`https://${icon}.com`)}>
-              <Icon name={icon} size={24} color="#555" style={styles.icon} />
-            </TouchableOpacity>
-          ))}
-        </View>
       </View>
     </ScrollView>
   );
 };
 
-export default Homepage;
-
 const styles = StyleSheet.create({
   headerContainer: {
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    backgroundColor: '#fff', 
-    paddingVertical: 10, 
-    paddingHorizontal: 15, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#ddd', 
-    position: 'relative', 
-    zIndex: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
   },
-  headerLeft: { flexDirection: 'row', alignItems: 'center' },
-  logo: { width: 30, height: 30, marginRight: 8 },
-  logoText: { fontSize: 15, fontWeight: 'italic', color: '#003366' },
-  menuButton: { padding: 10 },
-  profileButton: { padding: 10 },
-  menuDropdown: { position: 'absolute', top: 60, right: 15, backgroundColor: '#fff', borderRadius: 6, borderColor: '#ccc', borderWidth: 1, width: 200, elevation: 6, zIndex: 999 },
-  menuItem: { paddingVertical: 12, paddingHorizontal: 15, borderBottomColor: '#eee', borderBottomWidth: 1, fontSize: 14, color: '#14752e' },
-  background: { flex: 1, justifyContent: 'center' },
-  overlay: { paddingHorizontal: 20, alignItems: 'center', backgroundColor: 'rgba(52, 179, 2, 0.3)', paddingVertical: 30 },
-  title: { fontSize: 32, fontWeight: '300', color: '#fff', marginBottom: 10, textAlign: 'center' },
-  subtitle: { fontSize: 16, color: '#fff', textAlign: 'center', marginBottom: 30, maxWidth: 340 },
-  searchContainer: { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 10, alignItems: 'center', overflow: 'hidden', elevation: 4, width: '100%' },
-  input: { flex: 1, paddingVertical: 10, paddingHorizontal: 12, fontSize: 14, color: '#333' },
-  searchButton: { backgroundColor: '#66bb6a', paddingVertical: 10, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center' },
-  searchButtonText: { color: '#fff', fontWeight: '600', fontSize: 13, marginRight: 4 },
-  arrow: { color: '#fff', fontSize: 18 },
-  impactSection: { flexDirection: 'row', alignItems: 'center', padding: 20, backgroundColor: '#fdfdfd', flexWrap: 'wrap' },
-  impactImage: { width: 160, height: 160, borderRadius: 100, marginRight: 20 },
-  impactTextContainer: { flex: 1, minWidth: 220 },
-  impactTitle: { fontSize: 24, fontWeight: '300', color: '#333', marginBottom: 10 },
-  impactParagraph: { fontSize: 14, color: '#555', marginBottom: 6, lineHeight: 20 },
-  stepsContainer: { padding: 30, backgroundColor: '#fff', alignItems: 'center' },
-  stepBox: { width: '100%', maxWidth: 300, alignItems: 'center', marginBottom: 30 },
-  stepImage: { width: 250, height: 150, borderRadius: 6, resizeMode: 'cover' },
-  stepNumber: {
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+  },
+  logoText: {
     fontSize: 20,
     color: '#388e3c',
-    fontWeight: '800',
-    marginTop: -0,
-    position: 'absolute',
-    top: -20,
-    textAlign: 'center',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 6,
-    fontFamily: 'Cursive',
-    fontStyle: 'italic',
-    letterSpacing: 2,
+    fontWeight: 'bold',
   },
-  stepTitle: { fontSize: 22, fontWeight: '600', marginVertical: 6, color: '#000' },
-  stepDescription: { fontSize: 14, textAlign: 'center', color: '#333', lineHeight: 20 },
-  applyButton: { backgroundColor: '#14752e', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 6, marginTop: 10 },
-  applyButtonText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-  socialSection: { padding: 20, backgroundColor: '#f1f1f1', alignItems: 'center' },
-  socialTitle: { fontSize: 16, fontWeight: '600', color: '#444', marginBottom: 10 },
-  socialDivider: { width: '90%', height: 1, backgroundColor: '#aaa', marginBottom: 15 },
-  iconRow: { flexDirection: 'row', justifyContent: 'space-around', width: '80%' },
-  icon: { marginHorizontal: 10 },
+  menuButton: {
+    padding: 10,
+  },
+  profileButton: {
+    padding: 10,
+  },
+  menuDropdown: {
+    position: 'absolute',
+    top: 50,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    padding: 10,
+  },
+  menuItem: {
+    fontSize: 16,
+    paddingVertical: 5,
+  },
+  background: {
+    height: 300,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 32,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  subtitle: {
+    color: '#fff',
+    fontSize: 18,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  input: {
+    width: '70%',
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  searchButton: {
+    padding: 10,
+    backgroundColor: '#66bb6a',
+    borderRadius: 5,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  arrow: {
+    color: '#fff',
+    fontSize: 20,
+    marginLeft: 5,
+  },
+  impactSection: {
+    flexDirection: 'row',
+    padding: 20,
+    backgroundColor: '#f1f8e9',
+  },
+  impactImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 10,
+    marginRight: 20,
+  },
+  impactTextContainer: {
+    flex: 1,
+  },
+  impactTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  impactParagraph: {
+    fontSize: 16,
+    marginTop: 10,
+  },
+  stepsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 20,
+  },
+  stepCard: {
+    width: '30%',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  stepImage: {
+    width: '100%',
+    height: 100,
+    borderRadius: 10,
+  },
+  stepTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  stepDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+  },
 });
+
+export default homepage;

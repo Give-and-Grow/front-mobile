@@ -56,8 +56,10 @@ const LoginScreen = ({ navigation }) => {
             console.log('Server response:', response.data);
 
             if (response.status === 200) {
-                // Store the token in AsyncStorage
+                // Store the token and role in AsyncStorage
                 await AsyncStorage.setItem('userToken', response.data.token);
+                await AsyncStorage.setItem('userRole', response.data.role);  // Store the role
+
                 Alert.alert('Success', 'Login successful!');
                 navigation.navigate('homepage');
             } else {

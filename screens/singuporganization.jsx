@@ -21,7 +21,7 @@ const singuporganization = ({ role }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/auth/signup', {
+      const response = await fetch('http://192.168.1.107:5000/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -55,7 +55,7 @@ const singuporganization = ({ role }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/auth/verify', {
+      const response = await fetch('http://192.168.1.107:5000/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,7 +93,7 @@ const singuporganization = ({ role }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/auth/resend-code', {
+      const response = await fetch('http://192.168.1.107:5000/auth/resend-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -159,18 +159,19 @@ const singuporganization = ({ role }) => {
           </TouchableOpacity>
 
           {showResendForm && (
-            <View>
-              <TextInput
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.input}
-              />
-              <TouchableOpacity style={styles.button} onPress={handleResend}>
-                <Text style={styles.buttonText}>Resend Code</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+  <View style={{ width: '100%', alignItems: 'center' }}>
+    <TextInput
+      placeholder="Enter your email"
+      value={email}
+      onChangeText={setEmail}
+      style={styles.input}
+    />
+    <TouchableOpacity style={styles.button} onPress={handleResend}>
+      <Text style={styles.buttonText}>Resend Code</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
         </>
       )}
 
@@ -247,11 +248,12 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: 'center',
     marginTop: 10,
-    width: '100%',
+    width: '70%',
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    
   },
   resendLink: {
     color: '#388e3c',
