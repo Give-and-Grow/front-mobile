@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const SinupScreen = ({ role }) => {
   const [username, setUsername] = useState('');
@@ -14,6 +15,7 @@ const SinupScreen = ({ role }) => {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
+  const navigation = useNavigation();
 
   const handleNext = async () => {
     if (!firstName || !lastName || !birthday || !gender || !email || !password || !phone) {

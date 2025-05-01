@@ -20,6 +20,8 @@ import ChangePasswordProfile from 'C:/Users/user/Videos/SOFT/front-mobile/screen
 import singuporganization from 'C:/Users/user/Videos/SOFT/front-mobile/screens/singuporganization.jsx';
 import SelectUserType from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SelectUserType.jsx';
 import SignupFlow from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SignupFlow.jsx';
+
+import ProfileOrganizationScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ProfileOrganizationScreen.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -40,6 +42,8 @@ const Index = () => {
         <Stack.Screen name="singuporganization" component={singuporganization} />
         <Stack.Screen name="SelectUserType" component={SelectUserType} />
         <Stack.Screen name="SignupFlow" component={SignupFlow} />
+        <Stack.Screen name="ProfileOrganizationScreen" component={ProfileOrganizationScreen} />
+       
       </Stack.Navigator>
     </NavigationContainer>
   );
