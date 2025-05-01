@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Imageorg from '../assets/images/organSingup.png'; // تأكد أن الصورة متوافقة مع React Native أو استخدم رابط URL
-
+import Ionicons from 'react-native-vector-icons/Ionicons'; // تأكد من تثبيت هذه المكتبة
 const singuporganization = ({ role }) => {
   const navigation = useNavigation();
   const [step, setStep] = useState(1);
@@ -13,7 +13,7 @@ const singuporganization = ({ role }) => {
   const [phone, setPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [showResendForm, setShowResendForm] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false); 
   const handleNext = async () => {
     if (!organizationName || !description || !email || !password || !phone) {
       Alert.alert('Error', 'Please fill all fields');
@@ -134,29 +134,72 @@ const singuporganization = ({ role }) => {
 
       {step === 1 && (
         <>
-          <Text style={styles.title}>Create Organization Account</Text>
-          <TextInput placeholder="Organization Name" value={organizationName} onChangeText={setOrganizationName} style={styles.input} />
-          <TextInput placeholder="Description" value={description} onChangeText={setDescription} style={styles.input} />
-          <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} keyboardType="email-address" />
-          <TextInput placeholder="Password" value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
-          <TextInput placeholder="Phone Number" value={phone} onChangeText={setPhone} style={styles.input} keyboardType="phone-pad" />
-          <TouchableOpacity style={styles.button} onPress={handleNext}>
-            <Text style={styles.buttonText}>Next</Text>
-          </TouchableOpacity>
+         <Text style={styles.title}>Create Organization Account</Text>
+
+<View style={styles.inputContainer}>
+  <Ionicons name="business-outline" size={20} color="#388e3c" style={styles.icon} />
+  <TextInput placeholder="Organization Name" value={organizationName} onChangeText={setOrganizationName} style={styles.inputField} />
+</View>
+
+<View style={styles.inputContainer}>
+  <Ionicons name="document-text-outline" size={20} color="#388e3c" style={styles.icon} />
+  <TextInput placeholder="Description" value={description} onChangeText={setDescription} style={styles.inputField} />
+</View>
+
+<View style={styles.inputContainer}>
+  <Ionicons name="mail-outline" size={20} color="#388e3c" style={styles.icon} />
+  <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.inputField} keyboardType="email-address" />
+</View>
+
+<View style={styles.inputContainer}>
+  <Ionicons name="lock-closed-outline" size={20} color="#388e3c" style={styles.icon} />
+  <TextInput
+    placeholder="Password"
+    value={password}
+    onChangeText={setPassword}
+    style={[styles.inputField, { flex: 1 }]}
+    secureTextEntry={!showPassword}
+  />
+  <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+    <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={20} color="#388e3c" />
+  </TouchableOpacity>
+</View>
+
+<View style={styles.inputContainer}>
+  <Ionicons name="call-outline" size={20} color="#388e3c" style={styles.icon} />
+  <TextInput placeholder="Phone Number" value={phone} onChangeText={setPhone} style={styles.inputField} keyboardType="phone-pad" />
+</View>
+
+<TouchableOpacity style={styles.button} onPress={handleNext}>
+  <Text style={styles.buttonText}>Next</Text>
+</TouchableOpacity>
+
         </>
       )}
 
       {step === 2 && (
         <>
           <Text style={styles.title}>Enter Verification Code</Text>
-          <TextInput placeholder="Verification Code" value={verificationCode} onChangeText={setVerificationCode} style={styles.input} />
-          <TouchableOpacity style={styles.button} onPress={handleVerification}>
-            <Text style={styles.buttonText}>Verify & Continue</Text>
-          </TouchableOpacity>
+          <View style={styles.inputIconContainer}>
+  <Ionicons name="key-outline" size={20} color="#388e3c" style={styles.icon} />
+  <TextInput
+    placeholder="Verification Code"
+    value={verificationCode}
+    onChangeText={setVerificationCode}
+    style={styles.inputWithIcon}
+    keyboardType="number-pad"
+  />
+</View>
 
-          <TouchableOpacity onPress={() => setShowResendForm(!showResendForm)}>
-            <Text style={styles.resendLink}>Resend Code</Text>
-          </TouchableOpacity>
+<TouchableOpacity style={styles.button} onPress={handleVerification}>
+  <Text style={styles.buttonText}>Verify & Continue</Text>
+</TouchableOpacity>
+
+<TouchableOpacity onPress={() => setShowResendForm(!showResendForm)} style={styles.resendLinkContainer}>
+  <Ionicons name="refresh-circle-outline" size={20} color="#388e3c" style={styles.icon} />
+  <Text style={styles.resendLink}>Resend Code</Text>
+</TouchableOpacity>
+
 
           {showResendForm && (
   <View style={{ width: '100%', alignItems: 'center' }}>
@@ -271,4 +314,68 @@ const styles = StyleSheet.create({
     color: '#4caf50',
     marginBottom: 20,
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    borderColor: '#66bb6a',
+    borderWidth: 2,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+  },
+  eyeIcon: {
+    marginLeft: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 0,
+    color: '#000',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    borderColor: '#66bb6a',
+    borderWidth: 2,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    width: '100%',
+  },
+  icon: {
+    marginRight: 10,
+  },
+  inputField: {
+    flex: 1,
+    paddingVertical: 10,
+    color: '#000',
+  },
+  inputIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    borderColor: '#66bb6a',
+    borderWidth: 2,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    width: '100%',
+  },
+  icon: {
+    marginRight: 10,
+  },
+  inputWithIcon: {
+    flex: 1,
+    paddingVertical: 10,
+    color: '#000',
+  },
+  resendLinkContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  
 });
