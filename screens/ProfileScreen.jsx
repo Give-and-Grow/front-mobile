@@ -129,7 +129,7 @@ const ProfileScreen = () => {
     });
 
     try {
-      const res = await axios.put('http://192.168.1.107:5000/profile', cleanedProfile, {
+      const res = await axios.put('http://192.168.1.107:5000/profile/', cleanedProfile, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Profile updated:', res.data);
