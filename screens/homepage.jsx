@@ -113,7 +113,7 @@ const homepage = () => {
 
       {/* Impact Section */}
       <View style={styles.impactSection}>
-        <Image source={require('../assets/images/volunter3.webp')} style={styles.impactImage} />
+        <Image source={require('../assets/images/volunter2.jpg')} style={styles.impactImage} />
         <View style={styles.impactTextContainer}>
           <Text style={styles.impactTitle}>More people.{"\n"}More impact.</Text>
           <Text style={styles.impactParagraph}>
@@ -171,12 +171,20 @@ const homepage = () => {
     </TouchableOpacity>
     <TouchableOpacity
   style={styles.opportunityListButton}
-  onPress={() => navigation.navigate('OpportunityList')}
+  onPress={() => navigation.navigate('CreateTagAssigner')}
 >
   <Text style={styles.opportunityListButtonText}>📋 View All Opportunities</Text>
 </TouchableOpacity>
 
   </View>
+)}
+{userType === 'user' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('OpportunityStatusPage')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 View Nearby Opportunities</Text>
+  </TouchableOpacity>
 )}
 
     </ScrollView>

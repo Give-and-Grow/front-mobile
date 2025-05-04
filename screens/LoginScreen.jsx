@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     Animated,
     Alert,
+    ScrollView,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // لاستعمال AsyncStorage
@@ -76,7 +77,7 @@ const LoginScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
             <View style={styles.imageContainer}>
                 <Animated.Image source={images[imageIndex]} style={styles.image} />
             </View>
@@ -140,7 +141,8 @@ const LoginScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-        </View>
+       
+    </ScrollView>
     );
 };
 
