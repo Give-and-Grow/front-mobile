@@ -11,7 +11,7 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const ChangePasswordProfile = ({ navigation }) => {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -50,7 +50,7 @@ const ChangePasswordProfile = ({ navigation }) => {
         return;
       }
 
-      const response = await axios.put('http://192.168.1.107:5000/profile/change-password', {
+      const response = await axios.put(`${ipAdd}:5000/profile/change-password`, {
         old_password: oldPassword,
         new_password: newPassword,
         confirm_new_password: confirmNewPassword,

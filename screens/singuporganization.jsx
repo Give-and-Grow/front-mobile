@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Imageorg from '../assets/images/organSingup.png'; // تأكد أن الصورة متوافقة مع React Native أو استخدم رابط URL
+import ipAdd from '../scripts/helpers/ipAddress';
 import Ionicons from 'react-native-vector-icons/Ionicons'; // تأكد من تثبيت هذه المكتبة
 const singuporganization = ({ role }) => {
   const navigation = useNavigation();
@@ -21,7 +22,7 @@ const singuporganization = ({ role }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.107:5000/auth/signup', {
+      const response = await fetch(`${ipAdd}:5000/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -55,7 +56,7 @@ const singuporganization = ({ role }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.107:5000/auth/verify', {
+      const response = await fetch(`${ipAdd}:5000/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,7 +94,7 @@ const singuporganization = ({ role }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.107:5000/auth/resend-code', {
+      const response = await fetch(`${ipAdd}:5000/auth/resend-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

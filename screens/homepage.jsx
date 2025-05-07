@@ -171,7 +171,7 @@ const homepage = () => {
     </TouchableOpacity>
     <TouchableOpacity
   style={styles.opportunityListButton}
-  onPress={() => navigation.navigate('CreateTagAssigner')}
+  onPress={() => navigation.navigate('OpportunityList')}
 >
   <Text style={styles.opportunityListButtonText}>📋 View All Opportunities</Text>
 </TouchableOpacity>
@@ -181,7 +181,7 @@ const homepage = () => {
 {userType === 'user' && (
   <TouchableOpacity
     style={styles.opportunityListButton}
-    onPress={() => navigation.navigate('OpportunityStatusPage')}
+    onPress={() => navigation.navigate('nearby_opportunitiesUser')}
   >
     <Text style={styles.opportunityListButtonText}>📍 View Nearby Opportunities</Text>
   </TouchableOpacity>

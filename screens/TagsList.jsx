@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, Button } from 'react-native';
 import axios from 'axios';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const TagsList = ({ opportunityId }) => { // تأكد من تمرير الـ opportunityId كـ prop
   const [tags, setTags] = useState([]);
   const [selectedTag, setSelectedTag] = useState(null);
@@ -12,7 +12,7 @@ const TagsList = ({ opportunityId }) => { // تأكد من تمرير الـ opp
     const fetchTags = async () => {
       try {
         // تغيير الـ URL ليأخذ الـ opportunityId
-        const response = await axios.get(`http://192.168.1.107:5000/tags/opportunity/${opportunityId}`);
+        const response = await axios.get(`${ipAdd}:5000/tags/opportunity/${opportunityId}`);
         setTags(response.data);
       } catch (error) {
         console.error('Error fetching tags:', error);

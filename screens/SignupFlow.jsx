@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import SignupScreen from './SinupScreen';
 import Signuporganization from './singuporganization';
 import SelectUserType from './SelectUserType';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const SignupFlow = () => {
   const [userType, setUserType] = useState(null);
 

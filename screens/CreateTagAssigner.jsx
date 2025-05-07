@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const CreateTagAssigner = () => {
   const [opportunityId, setOpportunityId] = useState('5');
   const [tagsInput, setTagsInput] = useState('');
@@ -55,7 +55,7 @@ const CreateTagAssigner = () => {
       const tagsArray = tagsInput.split(',').map(tag => tag.trim().toLowerCase());
 
       const response = await axios.post(
-        `http://192.168.1.107:5000/tags/assign/${opportunityId}`,
+       `${ipAdd}:5000/tags/assign/${opportunityId}`,
         { tags: tagsArray },
         {
           headers: {

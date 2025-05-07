@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const ProfileScreen = () => {
   const [profile, setProfile] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -36,7 +36,7 @@ const ProfileScreen = () => {
 
   const fetchProfile = async (token) => {
     try {
-      const res = await axios.get('http://192.168.1.107:5000/profile/', {
+      const res = await axios.get(`${ipAdd}:5000/profile/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProfile(res.data);
@@ -50,7 +50,7 @@ const ProfileScreen = () => {
 
   const fetchMySkills = async (t) => {
     try {
-      const res = await axios.get('http://192.168.1.107:5000/user-skills/', {
+      const res = await axios.get(`${ipAdd}:5000/user-skills/`, {
         headers: { Authorization: `Bearer ${t}` },
       });
       setMySkills(res.data.skills);
@@ -61,7 +61,7 @@ const ProfileScreen = () => {
 
   const fetchAvailableSkills = async (t) => {
     try {
-      const res = await axios.get('http://192.168.1.107:5000/user-skills/available', {
+      const res = await axios.get(`${ipAdd}:5000/user-skills/available`, {
         headers: { Authorization: `Bearer ${t}` },
       });
       setAvailableSkills(res.data.available_skills);
@@ -72,7 +72,7 @@ const ProfileScreen = () => {
 
   const addSkill = async (skillId, skillName) => {
     try {
-      await axios.post(`http://192.168.1.107:5000/user-skills/add/${skillId}`, {}, {
+      await axios.post(`${ipAdd}:5000/user-skills/add/${skillId}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -91,7 +91,7 @@ const ProfileScreen = () => {
 
   const removeSkill = async (skillId, skillName) => {
     try {
-      await axios.delete(`http://192.168.1.107:5000/user-skills/remove/${skillId}`, {
+      await axios.delete(`${ipAdd}:5000/user-skills/remove/${skillId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -129,7 +129,7 @@ const ProfileScreen = () => {
     });
 
     try {
-      const res = await axios.put('http://192.168.1.107:5000/profile/', cleanedProfile, {
+      const res = await axios.put(`${ipAdd}:5000/profile/`, cleanedProfile, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Profile updated:', res.data);

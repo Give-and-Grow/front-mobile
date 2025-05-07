@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView,
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 
 const CreateJobOpportunity = () => {
     const [step, setStep] = useState(1);
@@ -38,7 +38,7 @@ const CreateJobOpportunity = () => {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.107:5000/opportunities/create', formData, {
+            const response = await axios.post(`${ipAdd}:5000/opportunities/create`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
