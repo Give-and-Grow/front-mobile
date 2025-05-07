@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const { width } = Dimensions.get('window'); // to make the image responsive
 
 const SelectUserType = ({ onSelect }) => {

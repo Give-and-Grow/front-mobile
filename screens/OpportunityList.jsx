@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, Animated, TouchableOpacity, Image, Modal, Linking, TextInput } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const OpportunitiesList = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ const OpportunitiesList = () => {
           return;
         }
   
-        const response = await axios.get('http://192.168.1.107:5000/opportunities/organization', {
+        const response = await axios.get(`${ipAdd}:5000/opportunities/organization`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -59,7 +59,34 @@ const OpportunitiesList = () => {
     fetchOpportunities();
   }, []);
   
-
+  const handleRestore = async (opportunityId) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        setError('Token not found');
+        return;
+      }
+  
+      const response = await axios.put(
+        `${ipAdd}:5000/opportunities/${opportunityId}/restore`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        Alert.alert('Success', 'Opportunity restored successfully');
+        // Refresh or update state if needed
+      }
+    } catch (error) {
+      console.error(error);
+      setError('Failed to restore opportunity');
+    }
+  };
+  
   const handleDelete = async (opportunityId) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
@@ -68,7 +95,7 @@ const OpportunitiesList = () => {
         return;
       }
 
-      const response = await axios.delete(`http://192.168.1.107:5000/opportunities/${opportunityId}`, {
+      const response = await axios.delete( `${ipAdd}:5000/opportunities/${opportunityId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -84,6 +111,8 @@ const OpportunitiesList = () => {
   };
  
   
+ 
+  
 
   const handleSubmitUpdate = async () => {
     try {
@@ -94,7 +123,7 @@ const OpportunitiesList = () => {
       }
 
       const response = await axios.put(
-        `http://192.168.1.107:5000/opportunities/${selectedOpportunity.id}`,
+        `${ipAdd}:5000/opportunities/${selectedOpportunity.id}`,
         updateData,
         {
           headers: {
@@ -171,17 +200,28 @@ const OpportunitiesList = () => {
       <Text style={styles.header}>Available Opportunities</Text>
       {opportunities.map((opportunity) => (
         <Animated.View key={opportunity.id} style={[styles.card, { opacity: fadeAnim }]}>
-          {opportunity.image_url && <Image source={{ uri: opportunity.image_url }} style={styles.image} />}
+         <View style={styles.imageContainer}>
+  {opportunity.image_url && (
+    <Image source={{ uri: opportunity.image_url }} style={styles.image} />
+  )}
 
-          {/* زر الحذف */}
-          <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(opportunity.id)}>
-            <Text style={styles.deleteText}>❌</Text>
-          </TouchableOpacity>
+  <View style={styles.topButtons}>
+    {opportunity.is_deleted === false ? (
+      <TouchableOpacity style={styles.iconButton} onPress={() => handleDelete(opportunity.id)}>
+        <Text style={styles.iconText}>🗑️</Text>
+      </TouchableOpacity>
+    ) : (
+      <TouchableOpacity style={styles.iconButton} onPress={() => handleRestore(opportunity.id)}>
+        <Text style={styles.iconText}>↩️</Text>
+      </TouchableOpacity>
+    )}
 
-          {/* زر التحديث */}
-          <TouchableOpacity style={styles.updateButton} onPress={() => handleUpdate(opportunity)}>
-            <Text style={styles.updateText}>✏️</Text>
-          </TouchableOpacity>
+    <TouchableOpacity style={styles.iconButton} onPress={() => handleUpdate(opportunity)}>
+      <Text style={styles.iconText}>✏️</Text>
+    </TouchableOpacity>
+  </View>
+</View>
+
 
           <Text style={styles.title}>{opportunity.title}</Text>
           <Text style={styles.description}>{opportunity.description}</Text>
@@ -306,6 +346,29 @@ const OpportunitiesList = () => {
 };
 
 const styles = StyleSheet.create({
+  imageContainer: {
+    position: 'relative',
+  },
+  
+  topButtons: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  
+  iconButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 20,
+    padding: 6,
+    marginLeft: 5,
+  },
+  
+  iconText: {
+    fontSize: 16,
+  },
+  
   input: {
     height: 40,
     borderColor: '#ccc',

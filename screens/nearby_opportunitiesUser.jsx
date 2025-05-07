@@ -10,7 +10,7 @@ import {
   Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const NearbyOpportunitiesUser = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ const NearbyOpportunitiesUser = () => {
           return;
         }
 
-        const response = await fetch("http://192.168.1.107:5000/opportunities/nearby_opportunities", {
+        const response = await fetch(`${ipAdd}:5000/opportunities/nearby_opportunities`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

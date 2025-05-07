@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const SinupScreen = ({ role }) => {
   const [username, setUsername] = useState('');
   const [step, setStep] = useState(1);
@@ -29,7 +29,7 @@ const SinupScreen = ({ role }) => {
     const [year, month, day] = birthday.split('-'); // Assuming birthday is in 'YYYY-MM-DD' format.
 
     try {
-      const response = await fetch('http://192.168.1.107:5000/auth/signup', {
+      const response = await fetch(`${ipAdd}:5000/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -68,7 +68,7 @@ const SinupScreen = ({ role }) => {
     }
   
     try {
-      const response = await fetch('http://192.168.1.107:5000/auth/verify', {
+      const response = await fetch(`${ipAdd}:5000/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -98,7 +98,7 @@ const SinupScreen = ({ role }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.107:5000/auth/resend-code', {
+      const response = await fetch(`${ipAdd}:5000/auth/resend-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

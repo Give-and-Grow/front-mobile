@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const ResetPasswordScreen = ({ navigation }) => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ const ResetPasswordScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.107:5000/auth/reset-password-request', {
+      const response = await fetch(`${ipAdd}:5000/auth/reset-password-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -43,7 +43,7 @@ const ResetPasswordScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.107:5000/auth/reset-password', {
+      const response = await fetch(`${ipAdd}:5000/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, new_password: newPassword }),

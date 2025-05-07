@@ -12,6 +12,7 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // لاستعمال AsyncStorage
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import ipAdd from '../scripts/helpers/ipAddress';
 
 const images = [
     require('../assets/images/volunter1.jpg'),
@@ -52,7 +53,7 @@ const LoginScreen = ({ navigation }) => {
         try {
             console.log('Sending login request with:', { username, password });
 
-            const response = await axios.post('http://192.168.1.107:5000/auth/login', {
+            const response = await axios.post(`${ipAdd}:5000/auth/login`, {
                 username,
                 password,
             });

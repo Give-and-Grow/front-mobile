@@ -5,7 +5,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';  // Import useNavigation
-
+import ipAdd from '../scripts/helpers/ipAddress';
 const ProfileOrganizationScreen = () => {
   const [profile, setProfile] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -31,7 +31,7 @@ const ProfileOrganizationScreen = () => {
   const fetchProfile = async (token) => {
     try {
       console.log('Fetching profile with token:', token);  // Debug log
-      const res = await axios.get('http://192.168.1.107:5000/organization/profile', {
+      const res = await axios.get(`${ipAdd}:5000/organization/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Profile fetched:', res.data);  // Debug log
@@ -60,7 +60,7 @@ const ProfileOrganizationScreen = () => {
     });
 
     try {
-      const res = await axios.put('http://192.168.1.107:5000/organization/profile', cleanedProfile, {
+      const res = await axios.put(`${ipAdd}:5000/organization/profile`, cleanedProfile, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Profile updated:', res.data);
