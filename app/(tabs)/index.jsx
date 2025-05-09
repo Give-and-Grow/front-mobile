@@ -28,6 +28,9 @@ import nearby_opportunitiesUser from 'C:/Users/user/Videos/SOFT/front-mobile/scr
 import OpportunityStatusPage from 'C:/Users/user/Videos/SOFT/front-mobile/screens/OpportunityStatusPage.jsx'
 import CreateTagAssigner from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CreateTagAssigner.jsx';
 import TagsList from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CreateTagAssigner.jsx';
+import AdminDashboardScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdminDashboardScreen.jsx';
+import adminfeaturerejectapprove from 'C:/Users/user/Videos/SOFT/front-mobile/screens/adminfeaturerejectapprove.jsx';
+import adminfeatchallorganizationandDelete from 'C:/Users/user/Videos/SOFT/front-mobile/screens/adminfeatchallorganizationandDelete.jsx';
 
 const Stack = createStackNavigator();
 
@@ -57,6 +60,9 @@ const Index = () => {
         <Stack.Screen name="OpportunityStatusPage" component={OpportunityStatusPage} />
         <Stack.Screen name="CreateTagAssigner" component={CreateTagAssigner} />
         <Stack.Screen name="TagsList" component={TagsList} />
+        <Stack.Screen name="AdminDashboardScreen" component={AdminDashboardScreen} />
+        <Stack.Screen name="adminfeaturerejectapprove" component={adminfeaturerejectapprove} />
+        <Stack.Screen name="adminfeatchallorganizationandDelete" component={adminfeatchallorganizationandDelete} />
       </Stack.Navigator>
     </NavigationContainer>
   );

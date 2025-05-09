@@ -18,6 +18,9 @@ git checkout -b جديد اسم البرانش
 
 git checkout البرانش
 git branch
+npx expo start
+--$env:EXPO_DEVTOOLS_HOST="192.168.1.107"; npx expo start --tunnel
+
 --------------------------------------
 backend:
 cd Backend
