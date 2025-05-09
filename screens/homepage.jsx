@@ -186,7 +186,33 @@ const homepage = () => {
     <Text style={styles.opportunityListButtonText}>📍 View Nearby Opportunities</Text>
   </TouchableOpacity>
 )}
-
+{userType === 'admin' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('AdminDashboardScreen')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 Dashbord admin</Text>
+  </TouchableOpacity>
+  
+)}
+{userType === 'admin' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('adminfeaturerejectapprove')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 adminfeature</Text>
+  </TouchableOpacity>
+  
+)}
+{userType === 'admin' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('adminfeatchallorganizationandDelete')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 adminfeatureDelete or giveAll</Text>
+  </TouchableOpacity>
+  
+)}
     </ScrollView>
   );
 };

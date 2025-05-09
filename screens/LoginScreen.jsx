@@ -52,21 +52,30 @@ const LoginScreen = ({ navigation }) => {
     const handleLogin = async () => {
         try {
             console.log('Sending login request with:', { username, password });
-
+    
             const response = await axios.post(`${ipAdd}:5000/auth/login`, {
                 username,
                 password,
             });
-
+    
             console.log('Server response:', response.data);
-
+    
             if (response.status === 200) {
                 // Store the token and role in AsyncStorage
                 await AsyncStorage.setItem('userToken', response.data.token);
                 await AsyncStorage.setItem('userRole', response.data.role);  // Store the role
-
+    
                 Alert.alert('Success', 'Login successful!');
-                navigation.navigate('homepage');
+    
+                // Check user role and navigate accordingly
+                const userRole = response.data.role;
+                if (userRole === 'ADMIN') {
+                    // If the role is admin, navigate to AdminDashboardScreen
+                    navigation.navigate('AdminDashboardScreen');
+                } else {
+                    // Otherwise, navigate to homepage
+                    navigation.navigate('homepage');
+                }
             } else {
                 Alert.alert('Login Failed', response.data.message || 'Invalid credentials');
             }
@@ -76,6 +85,7 @@ const LoginScreen = ({ navigation }) => {
             Alert.alert('Error', message);
         }
     };
+    
 
     return (
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
