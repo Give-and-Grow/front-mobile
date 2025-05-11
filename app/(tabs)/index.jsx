@@ -31,7 +31,8 @@ import TagsList from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CreateTagAs
 import AdminDashboardScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdminDashboardScreen.jsx';
 import adminfeaturerejectapprove from 'C:/Users/user/Videos/SOFT/front-mobile/screens/adminfeaturerejectapprove.jsx';
 import adminfeatchallorganizationandDelete from 'C:/Users/user/Videos/SOFT/front-mobile/screens/adminfeatchallorganizationandDelete.jsx';
-
+import AdminProfile from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdminProfile.jsx'; 
+import SkillsList from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SkillsList.jsx'; 
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -62,7 +63,9 @@ const Index = () => {
         <Stack.Screen name="TagsList" component={TagsList} />
         <Stack.Screen name="AdminDashboardScreen" component={AdminDashboardScreen} />
         <Stack.Screen name="adminfeaturerejectapprove" component={adminfeaturerejectapprove} />
+        <Stack.Screen name="AdminProfile" component={AdminProfile} />
         <Stack.Screen name="adminfeatchallorganizationandDelete" component={adminfeatchallorganizationandDelete} />
+        <Stack.Screen name="SkillsList" component={SkillsList} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -51,7 +51,11 @@ const homepage = () => {
       navigation.navigate('ProfileScreen');
     } else if (userType === 'organization') {
       navigation.navigate('ProfileOrganizationScreen');
-    } else {
+    } 
+    else if (userType === 'admin') {
+      navigation.navigate('AdminProfile');
+    } 
+    else {
       console.log('No user type selected');
     }
   };
