@@ -33,6 +33,8 @@ import adminfeaturerejectapprove from 'C:/Users/user/Videos/SOFT/front-mobile/sc
 import adminfeatchallorganizationandDelete from 'C:/Users/user/Videos/SOFT/front-mobile/screens/adminfeatchallorganizationandDelete.jsx';
 import AdminProfile from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdminProfile.jsx'; 
 import SkillsList from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SkillsList.jsx'; 
+import AllOppertinitesUser from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AllOppertinitesUser.jsx'; 
+import RateParticipantsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/RateParticipantsScreen.jsx'; 
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -66,6 +68,9 @@ const Index = () => {
         <Stack.Screen name="AdminProfile" component={AdminProfile} />
         <Stack.Screen name="adminfeatchallorganizationandDelete" component={adminfeatchallorganizationandDelete} />
         <Stack.Screen name="SkillsList" component={SkillsList} />
+        <Stack.Screen name="AllOppertinitesUser" component={AllOppertinitesUser} />
+        <Stack.Screen name="RateParticipantsScreen" component={RateParticipantsScreen} />
+     
       </Stack.Navigator>
     </NavigationContainer>
   );

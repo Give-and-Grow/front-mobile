@@ -8,12 +8,11 @@ import {
   TouchableOpacity,
   Linking,
   Image,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ipAdd from "../scripts/helpers/ipAddress";
+import ipAdd from '../scripts/helpers/ipAddress';
 
-const NearbyOpportunitiesUser = () => {
+const AllOppertinitesUser = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,31 +21,25 @@ const NearbyOpportunitiesUser = () => {
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
-        const token = await AsyncStorage.getItem("userToken");
+        const token = await AsyncStorage.getItem('userToken');
         if (!token) {
-          setError("Token not found");
+          setError('Token not found');
           setLoading(false);
           return;
         }
 
-        const response = await fetch(
-          `${ipAdd}:5000/opportunities/nearby_opportunities`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${ipAdd}:5000/opportunities/list`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const data = await response.json();
 
         if (response.ok && data.opportunities) {
           setOpportunities(data.opportunities);
-          data.opportunities.forEach((opp) =>
-            fetchParticipationStatus(opp.id, token)
-          );
         } else {
-          setError(data.msg || "No nearby opportunities found.");
+          setError(data.msg || "No opportunities found.");
         }
       } catch (err) {
         setError("Failed to fetch opportunities.");
@@ -57,26 +50,6 @@ const NearbyOpportunitiesUser = () => {
 
     fetchOpportunities();
   }, []);
-
-  const fetchParticipationStatus = async (id, token) => {
-    try {
-      const response = await fetch(
-        `${ipAdd}:5000/opportunity-participants/opportunities/${id}/check-participation`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await response.json();
-      setParticipationStatus((prev) => ({
-        ...prev,
-        [id]: data.is_participating,
-      }));
-    } catch (error) {
-      console.error("Error checking participation:", error);
-    }
-  };
 
   const handleJoinOpportunity = async (oppId) => {
     const token = await AsyncStorage.getItem('userToken');
@@ -175,6 +148,7 @@ const NearbyOpportunitiesUser = () => {
       alert('An error occurred while checking participation');
     }
   };
+  
   const handleBooking = (applicationLink) => {
     if (applicationLink) {
       Linking.openURL(applicationLink);
@@ -185,7 +159,7 @@ const NearbyOpportunitiesUser = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🌍 Nearby Opportunities</Text>
+      <Text style={styles.title}>🌱 Opportunities</Text>
       {loading && <ActivityIndicator size="large" color="#2e7d32" />}
       {error !== "" && <Text style={styles.error}>{error}</Text>}
       <ScrollView contentContainerStyle={styles.cardsContainer}>
@@ -196,23 +170,31 @@ const NearbyOpportunitiesUser = () => {
             )}
             <Text style={styles.cardTitle}>🎯 {opp.title}</Text>
 
+            {/* Badges */}
             <View style={styles.badgeContainer}>
               <Text style={styles.badge}>📍 {opp.location}</Text>
               <Text style={styles.badge}>🕒 {opp.opportunity_type}</Text>
-              <Text style={styles.badge}>📏 {opp.distance_km} km</Text>
             </View>
 
-            <Text style={styles.cardLabel}>📝 Description:</Text>
+            <Text style={styles.cardLabel}>📝 Description: </Text>
             <Text style={styles.cardText}>{opp.description}</Text>
 
-            <Text style={styles.cardLabel}>📅 Start Date:</Text>
+            <View style={styles.separator} />
+
+            <Text style={styles.cardLabel}>📅 Start: </Text>
             <Text style={styles.cardText}>{opp.start_date}</Text>
 
-            <Text style={styles.cardLabel}>📅 End Date:</Text>
+            <View style={styles.separator} />
+
+            <Text style={styles.cardLabel}>📅 End: </Text>
             <Text style={styles.cardText}>{opp.end_date}</Text>
 
-            <Text style={styles.cardLabel}>✉️ Contact:</Text>
+            <View style={styles.separator} />
+
+            <Text style={styles.cardLabel}>✉️ Contact: </Text>
             <Text style={styles.cardText}>{opp.contact_email}</Text>
+
+            <View style={styles.separator} />
 
             <TouchableOpacity
               style={styles.button}
@@ -222,36 +204,35 @@ const NearbyOpportunitiesUser = () => {
             </TouchableOpacity>
 
             {/* Join/Withdraw buttons */}
-                       <View style={styles.row}>
-                         {participationStatus[opp.id] === "joined" ? (
-                           <TouchableOpacity
-                             style={styles.button}
-                             onPress={() => handleWithdrawOpportunity(opp.id)}
-                           >
-                             <Text style={styles.buttonText}>🚫 Withdraw</Text>
-                           </TouchableOpacity>
-                         ) : (
-                           <TouchableOpacity
-                             style={styles.button}
-                             onPress={() => handleJoinOpportunity(opp.id)}
-                           >
-                             <Text style={styles.buttonText}>✅ Join</Text>
-                           </TouchableOpacity>
-                         )}
-                         <TouchableOpacity
-                           style={styles.button}
-                           onPress={() => handleCheckParticipation(opp.id)}
-                         >
-                           <Text style={styles.buttonText}>🔍 Check Participation</Text>
-                         </TouchableOpacity>
-                       </View>
+            <View style={styles.row}>
+              {participationStatus[opp.id] === "joined" ? (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => handleWithdrawOpportunity(opp.id)}
+                >
+                  <Text style={styles.buttonText}>🚫 Withdraw</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => handleJoinOpportunity(opp.id)}
+                >
+                  <Text style={styles.buttonText}>✅ Join</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => handleCheckParticipation(opp.id)}
+              >
+                <Text style={styles.buttonText}>🔍 Check Participation</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ))}
       </ScrollView>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -297,7 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#1b5e20",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   badgeContainer: {
     flexDirection: "row",
@@ -313,17 +294,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 12,
     marginRight: 5,
-    marginBottom: 5,
   },
   cardLabel: {
     fontWeight: "bold",
     fontSize: 14,
     color: "#1b5e20",
     marginTop: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#a5d6a7",
-    paddingBottom: 2,
-    marginBottom: 2,
   },
   cardText: {
     fontSize: 14,
@@ -345,10 +321,22 @@ const styles = StyleSheet.create({
     width: "100%", // توسيع الأزرار لتأخذ العرض بالكامل
   },
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontWeight: "bold",
-    fontSize: 14,
+    fontSize: 16,
+    textTransform: "uppercase", // جعل النص بحروف كبيرة
+  },
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 6,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#81c784",
+    marginVertical: 8,
   },
 });
 
-export default NearbyOpportunitiesUser;
+
+export default AllOppertinitesUser;

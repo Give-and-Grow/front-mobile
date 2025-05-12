@@ -161,6 +161,12 @@ const homepage = () => {
     {/* Add Volunteering Opportunity Button */}
     <TouchableOpacity
       style={styles.opportunityListButton}
+      onPress={() => navigation.navigate('RateParticipantsScreen')}
+    >
+      <Text style={styles.opportunityListButtonText}>➕ Rate User </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.opportunityListButton}
       onPress={() => navigation.navigate('CreatevolunterOpportunity')}
     >
       <Text style={styles.opportunityListButtonText}>➕   Add Volunteering Opportunity</Text>
@@ -188,6 +194,14 @@ const homepage = () => {
     onPress={() => navigation.navigate('nearby_opportunitiesUser')}
   >
     <Text style={styles.opportunityListButtonText}>📍 View Nearby Opportunities</Text>
+  </TouchableOpacity>
+)}
+{userType === 'user' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('AllOppertinitesUser')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 View  Opportunities User </Text>
   </TouchableOpacity>
 )}
 {userType === 'admin' && (
