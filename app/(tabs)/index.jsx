@@ -36,6 +36,7 @@ import SkillsList from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SkillsLis
 import AllOppertinitesUser from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AllOppertinitesUser.jsx'; 
 import RateParticipantsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/RateParticipantsScreen.jsx'; 
 import ManageTagsScreenOrg from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ManageTagsScreenOrg.jsx';
+import FollowingScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/FollowingScreen.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -72,6 +73,7 @@ const Index = () => {
         <Stack.Screen name="AllOppertinitesUser" component={AllOppertinitesUser} />
         <Stack.Screen name="RateParticipantsScreen" component={RateParticipantsScreen} />
         <Stack.Screen name="ManageTagsScreenOrg" component={ManageTagsScreenOrg} />
+        <Stack.Screen name="FollowingScreen" component={FollowingScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
