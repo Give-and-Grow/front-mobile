@@ -167,6 +167,12 @@ const homepage = () => {
     </TouchableOpacity>
     <TouchableOpacity
       style={styles.opportunityListButton}
+      onPress={() => navigation.navigate('ManageTagsScreenOrg')}
+    >
+      <Text style={styles.opportunityListButtonText}>➕ Manage tage  </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.opportunityListButton}
       onPress={() => navigation.navigate('CreatevolunterOpportunity')}
     >
       <Text style={styles.opportunityListButtonText}>➕   Add Volunteering Opportunity</Text>
