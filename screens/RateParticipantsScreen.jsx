@@ -10,160 +10,150 @@ import {
   Image,
   Modal,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from '../scripts/helpers/ipAddress';
+import { MaterialIcons, FontAwesome } from '@expo/vector-icons'; 
+import { Picker } from '@react-native-picker/picker'; 
 
 const RateParticipantsScreen = () => {
   const [opportunities, setOpportunities] = useState([]);
-  const [selectedParticipants, setSelectedParticipants] = useState([]);
+  const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [rating, setRating] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [attendanceStatuses, setAttendanceStatuses] = useState([]);
+  const [selectedAttendanceStatus, setSelectedAttendanceStatus] = useState('');
 
   useEffect(() => {
-    fetchOpportunities();
+    loadOpportunities();
+    loadAttendanceStatuses();
   }, []);
 
-  const fetchOpportunities = async () => {
+  const loadOpportunities = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        Alert.alert('Error', 'No token found, please login first');
-        return;
-      }
-
-      const response = await axios.get(`${ipAdd}:5000/opportunities/organization`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await axios.get(`${ipAdd}:5000/opportunities/organization`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      setOpportunities(response.data.opportunities);
-    } catch (error) {
-      console.error('Error fetching opportunities:', error);
-      setError('Failed to load opportunities');
-      Alert.alert('Error', 'Failed to load opportunities');
+      setOpportunities(res.data.opportunities || []);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to fetch opportunities');
     }
   };
 
-  const fetchParticipants = async (opportunityId) => {
+  const loadAttendanceStatuses = async () => {
+    try {
+      const res = await axios.get(`${ipAdd}:5000/dropdown/attendance-status`);
+      setAttendanceStatuses(res.data);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to fetch attendance statuses');
+    }
+  };
+
+  const loadParticipants = async (opportunityId) => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        Alert.alert('Error', 'No token found, please login first');
-        setLoading(false);
-        return;
-      }
-
-      const response = await axios.get(
+      const res = await axios.get(
         `${ipAdd}:5000/opportunity-participants/opportunities/${opportunityId}/participants`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSelectedParticipants(response.data);
-      setLoading(false);
+      setParticipants(res.data);
       setSelectedOpportunity(opportunityId);
-    } catch (error) {
-      console.error('Error fetching participants:', error);
-      setLoading(false);
+    } catch (err) {
       Alert.alert('Error', 'Failed to load participants');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleRateParticipant = async () => {
-    if (!rating || !feedback) {
-      Alert.alert('Error', 'Please provide both rating and feedback');
+  const rateParticipant = async () => {
+    if (!rating || !feedback || !selectedAttendanceStatus) {
+      Alert.alert('Error', 'Please fill all fields: rating, feedback, and attendance status');
       return;
     }
-  
+
+    const ratingNum = parseInt(rating);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      Alert.alert('Error', 'Rating must be between 1 and 5');
+      return;
+    }
+
     try {
       const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        Alert.alert('Error', 'No token found, please login first');
-        return;
-      }
-  
-      // تحديد حالة الحضور (attendance_status)، هنا قمت بتحديد "attended" كمثال
-      const attendanceStatus = "attended";  // يمكنك تعديلها بناءً على الحالة الفعلية
-  
-      const response = await axios.post(
+      await axios.post(
         `${ipAdd}:5000/opportunity-participants/${selectedParticipant.id}/rate`,
         {
-          rating: parseInt(rating),
+          rating: ratingNum,
           feedback: feedback,
-          attendance_status: attendanceStatus,  // إضافة حالة الحضور هنا
+          attendance_status: selectedAttendanceStatus,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      Alert.alert('Success', response.data.msg);
+      Alert.alert('Success', 'Participant rated successfully');
       setModalVisible(false);
-      fetchParticipants(selectedOpportunity); // إعادة تحميل المشاركين
-    } catch (error) {
-      console.error('Error rating participant:', error);
-      Alert.alert('Error', 'Failed to rate participant');
+      loadParticipants(selectedOpportunity);
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.msg || 'Failed to rate');
     }
   };
-  
 
-  
-
-  const renderOpportunity = ({ item }) => (
+  const OpportunityCard = ({ item }) => (
     <View style={styles.card}>
       {item.image_url && <Image source={{ uri: item.image_url }} style={styles.image} />}
       <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
-      <Text style={styles.info}>
-        <Text style={styles.label}>Type:</Text> {item.opportunity_type?.split('.')[1]}
-      </Text>
-      <Text style={styles.info}>
-        <Text style={styles.label}>Location:</Text> {item.location}
-      </Text>
-      <Text style={styles.info}>
-        <Text style={styles.label}>Start:</Text> {item.start_date}
-      </Text>
-      <Text style={styles.info}>
-        <Text style={styles.label}>End:</Text> {item.end_date}
-      </Text>
+      {/* Badges */}
+      <View style={styles.badgeContainer}>
+              <Text style={styles.badge}>📍 {item.location}</Text>
+              <Text style={styles.badge}>🕒 {item.opportunity_type}</Text>
+            </View>
 
+            <Text style={styles.cardLabel}>📝 Description: </Text>
+            <Text style={styles.cardText}>{item.description}</Text>
+
+            <View style={styles.separator} />
+
+            <Text style={styles.cardLabel}>📅 Start: </Text>
+            <Text style={styles.cardText}>{item.start_date}</Text>
+
+            <View style={styles.separator} />
+
+            <Text style={styles.cardLabel}>📅 End: </Text>
+            <Text style={styles.cardText}>{item.end_date}</Text>
+
+            <View style={styles.separator} />
+
+            <Text style={styles.cardLabel}>✉️ Contact: </Text>
+            <Text style={styles.cardText}>{item.contact_email}</Text>
+
+            <View style={styles.separator} />
       <TouchableOpacity
         style={styles.button}
-        onPress={() => fetchParticipants(item.id)}
+        onPress={() => loadParticipants(item.id)}
       >
+        <MaterialIcons name="group" size={24} color="white" />
         <Text style={styles.buttonText}>View Participants</Text>
       </TouchableOpacity>
     </View>
   );
 
-  const renderParticipant = ({ item }) => (
+  const ParticipantCard = ({ item }) => (
     <View style={styles.participantCard}>
-      <View style={styles.participantInfo}>
-        {item.user.profile_picture ? (
-          <Image source={{ uri: item.user.profile_picture }} style={styles.participantImage} />
-        ) : (
-          <View style={styles.placeholderImage}></View>
-        )}
-        <View style={styles.participantTextContainer}>
-          <Text style={styles.participantName}>
-            {item.user.name} {item.user.last_name}
-          </Text>
-          <Text style={styles.participantStatus}>Attendance: {item.attendance_status}</Text>
-          <Text style={styles.participantPoints}>Points: {item.points_earned}</Text>
-          <Text style={styles.participantRating}>Rating: {item.rating || 'Not Rated'}</Text>
+      <Image
+        source={{ uri: item.user.profile_picture || 'https://via.placeholder.com/70' }}
+        style={styles.participantImage}
+      />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.participantName}>{item.user.name} {item.user.last_name}</Text>
+        <Text>Status: {item.attendance_status}</Text>
+        <Text>Rating: {item.rating || 'Not rated'}</Text>
+        {!item.completed && (
           <TouchableOpacity
             style={styles.rateButton}
             onPress={() => {
@@ -171,274 +161,127 @@ const RateParticipantsScreen = () => {
               setModalVisible(true);
             }}
           >
+            <FontAwesome name="star" size={18} color="white" />
             <Text style={styles.rateButtonText}>Rate</Text>
           </TouchableOpacity>
-        </View>
+        )}
       </View>
     </View>
   );
-
-  if (loading) {
-    return <ActivityIndicator size="large" color="#4CAF50" style={styles.loading} />;
-  }
 
   return (
     <View style={styles.container}>
       <FlatList
         data={opportunities}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderOpportunity}
-        ListEmptyComponent={<Text style={styles.emptyText}>No opportunities found.</Text>}
+        renderItem={OpportunityCard}
         ListHeaderComponent={<Text style={styles.heading}>Opportunities</Text>}
       />
-
+      {loading && <ActivityIndicator size="large" color="green" />}
       {selectedOpportunity && (
-        <View style={styles.participantListContainer}>
+        <>
           <Text style={styles.heading}>Participants</Text>
           <FlatList
-            data={selectedParticipants}
+            data={participants}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={renderParticipant}
-            ListEmptyComponent={<Text style={styles.emptyText}>No participants found.</Text>}
+            renderItem={ParticipantCard}
           />
-        </View>
+        </>
       )}
 
-<Modal
-  animationType="slide"
-  transparent={true}
-  visible={modalVisible}
-  onRequestClose={() => setModalVisible(false)}
->
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContainer}>
-      <Text style={styles.modalTitle}>Rate Participant</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Rating (1-5)"
-        value={rating}
-        keyboardType="numeric"
-        onChangeText={setRating}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Feedback"
-        value={feedback}
-        onChangeText={setFeedback}
-        multiline
-        numberOfLines={4}
-      />
-
-      <TouchableOpacity style={styles.submitButton} onPress={handleRateParticipant}>
-        <Text style={styles.submitButtonText}>Submit Rating</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.cancelButton}
-        onPress={() => setModalVisible(false)}
-      >
-        <Text style={styles.cancelButtonText}>Cancel</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
-
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+              <Text style={styles.modalTitle}>Rate Participant</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Rating (1-5)"
+                keyboardType="numeric"
+                value={rating}
+                onChangeText={setRating}
+              />
+              <TextInput
+                style={[styles.input, { height: 80 }]}
+                placeholder="Feedback"
+                multiline
+                value={feedback}
+                onChangeText={setFeedback}
+              />
+              <Text style={styles.inputLabel}>Attendance Status</Text>
+              <Picker
+                selectedValue={selectedAttendanceStatus}
+                onValueChange={(itemValue) => setSelectedAttendanceStatus(itemValue)}
+              >
+                {attendanceStatuses.map((status) => (
+                  <Picker.Item key={status} label={status} value={status} />
+                ))}
+              </Picker>
+              <TouchableOpacity style={styles.submitButton} onPress={rateParticipant}>
+                <Text style={styles.submitButtonText}>Submit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F1F8E9', // لون خلفية مريح
-    padding: 20,
-  },
-  heading: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#388E3C',
-    marginBottom: 20,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    padding: 24,
-    borderRadius: 16,
-    marginBottom: 25,
-    borderWidth: 1,
-    borderColor: '#a5d6a7',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 15,
-    elevation: 4,
-  },
-  image: {
-    height: 180,
-    width: '100%',
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 16,
-    color: '#616161',
+  container: { flex: 1, padding: 16, backgroundColor: '#f0fdf4' },
+  heading: { fontSize: 22, fontWeight: 'bold', color: '#2e7d32', marginVertical: 12 },
+  card: { backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 5 },
+  image: { width: '100%', height: 200, borderRadius: 10, marginBottom: 12 },
+  title: { fontSize: 18, fontWeight: 'bold', color: '#4CAF50' },
+  descriptionContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  infoText: { marginLeft: 8, fontSize: 14 },
+  button: { backgroundColor: '#4CAF50', padding: 12, borderRadius: 8, flexDirection: 'row', alignItems: 'center' },
+  buttonText: { color: '#fff', fontWeight: 'bold', marginLeft: 8 },
+  participantCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 16, borderRadius: 8, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 5 },
+  participantImage: { width: 70, height: 70, borderRadius: 35, marginRight: 16 },
+  participantName: { fontSize: 16, fontWeight: 'bold', color: '#4CAF50' },
+  rateButton: { backgroundColor: '#4CAF50', padding: 8, borderRadius: 25, flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  rateButtonText: { color: '#fff', marginLeft: 8 },
+  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+  modalContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 10, width: '80%' },
+  scrollContainer: { paddingBottom: 20 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#4CAF50', marginBottom: 16 },
+  input: { borderColor: '#4CAF50', borderWidth: 1, borderRadius: 10, padding: 12, marginBottom: 12, height: 50 },
+  inputLabel: { fontSize: 16, fontWeight: 'bold', color: '#4CAF50', marginBottom: 8 },
+  submitButton: { backgroundColor: '#4CAF50', padding: 12, borderRadius: 25, alignItems: 'center' },
+  submitButtonText: { color: '#fff', fontWeight: 'bold' },
+  cancelButtonText: { color: '#4CAF50', textAlign: 'center', marginTop: 8, fontSize: 16 },
+  badgeContainer: {
+    flexDirection: "row",
+    gap: 10,
+    flexWrap: "wrap",
     marginBottom: 10,
-    lineHeight: 22,
   },
-  info: {
+  badge: {
+    backgroundColor: "#c8e6c9",
+    color: "#2e7d32",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    fontSize: 12,
+    marginRight: 5,
+  },
+  cardLabel: {
+    fontWeight: "bold",
     fontSize: 14,
+    color: "#1b5e20",
     marginTop: 6,
-    color: '#333',
   },
-  label: {
-    fontWeight: '600',
-    color: '#388E3C',
-  },
-  button: {
-    backgroundColor: '#66bb6a',
-    paddingVertical: 12,
-    borderRadius: 18,
-    marginTop: 20,
-    alignItems: 'center',
-    elevation: 5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  participantListContainer: {
-    marginTop: 30,
-  },
-  participantCard: {
-    backgroundColor: '#dcedc8',
-    padding: 18,
-    marginVertical: 12,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#a5d6a7',
-    elevation: 2,
-  },
-  participantInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  participantImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginRight: 18,
-  },
-  placeholderImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#c8e6c9',
-    marginRight: 18,
-  },
-  participantTextContainer: {
-    flexDirection: 'column',
-  },
-  participantName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#388E3C',
-    marginBottom: 4,
-  },
-  participantStatus: {
+  cardText: {
     fontSize: 14,
-    color: '#388E3C',
+    color: "#555",
     marginBottom: 6,
   },
-  participantPoints: {
-    fontSize: 14,
-    color: '#388E3C',
-    marginBottom: 6,
-  },
-  participantRating: {
-    fontSize: 14,
-    color: '#388E3C',
-  },
-  loading: {
-    marginTop: 30,
-  },
-  emptyText: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: '#388E3C',
-    fontWeight: '600',
-  },
-  rateButton: {
-    backgroundColor: '#66bb6a',
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  rateButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContainer: {
-    width: '80%',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  submitButton: {
-    backgroundColor: '#388E3C',
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginTop: 10,
-    width: '100%',
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  cancelButton: {
-    backgroundColor: '#e0e0e0',
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginTop: 10,
-    width: '100%',
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#555',
-    fontWeight: '600',
-  }
 });
 
 export default RateParticipantsScreen;
