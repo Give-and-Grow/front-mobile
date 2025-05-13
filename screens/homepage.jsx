@@ -156,6 +156,7 @@ const homepage = () => {
           </View>
         ))}
       </View>
+     
       {userType === 'organization' && (
   <View >
     {/* Add Volunteering Opportunity Button */}
@@ -193,6 +194,14 @@ const homepage = () => {
 </TouchableOpacity>
 
   </View>
+)}
+{userType === 'user' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('FollowingScreen')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 follow screen </Text>
+  </TouchableOpacity>
 )}
 {userType === 'user' && (
   <TouchableOpacity
@@ -237,6 +246,7 @@ const homepage = () => {
   </TouchableOpacity>
   
 )}
+
     </ScrollView>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Image, Text, View, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Image, Text, View, FlatList, TouchableOpacity, Alert, Modal} from 'react-native';
 import { Appbar, Card, TextInput, Button } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,13 +7,23 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import ipAdd from '../scripts/helpers/ipAddress';
+import { Ionicons } from '@expo/vector-icons';
+
 const ProfileScreen = () => {
+  
+
+  const [peopleToFollow, setPeopleToFollow] = useState([]);
+  const [followers, setFollowers] = useState([]);
+  const [viewFollowers, setViewFollowers] = useState(false);
+  const [userData, setUserData] = useState(null);  // State for user profile data
   const [profile, setProfile] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [token, setToken] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
   const [mySkills, setMySkills] = useState([]);
   const [availableSkills, setAvailableSkills] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false); // For showing modals
+  const [modalType, setModalType] = useState(''); // To track which modal to show ('followers' or 'following')
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -25,6 +35,7 @@ const ProfileScreen = () => {
           fetchProfile(savedToken);
           fetchMySkills(savedToken);
           fetchAvailableSkills(savedToken);
+         
         }
       } catch (err) {
         console.error('Error retrieving token:', err);
@@ -33,7 +44,62 @@ const ProfileScreen = () => {
 
     getToken();
   }, []);
+  const fetchPeople = async () => {
+    try {
+      const response = await axios.get(`${ipAdd}:5000/follow/following`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setPeopleToFollow(response.data);
+    } catch (error) {
+      console.error('Error fetching people:', error);
+      Alert.alert('Error', 'Failed to fetch people data.');
+    }
+  };
+  useEffect(() => {
+    if (token) {
+      // Fetch people to follow
+     
 
+      // Fetch followers
+      const fetchFollowers = async () => {
+        try {
+          const response = await axios.get(`${ipAdd}:5000/follow/followers`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setFollowers(response.data);
+        } catch (error) {
+          console.error('Error fetching followers:', error);
+          Alert.alert('Error', 'Failed to fetch followers data.');
+        }
+      };
+
+      fetchPeople();
+      fetchFollowers();
+    }
+  }, [token]);  // Runs only when token is set
+  const handleUnfollow = async (personId) => {
+    try {
+      const response = await axios.delete(`${ipAdd}:5000/follow/${personId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        Alert.alert('Success', 'Unfollowed successfully!');
+        await fetchPeople(); // ✅ هذا يكفي لتحديث القائمة بشكل صحيح
+      } else {
+        Alert.alert('Error', 'Failed to unfollow.');
+      }
+    } catch (error) {
+      console.error('Unfollow error:', error);
+      Alert.alert('Error', 'Failed to connect to the server.');
+    }
+  };
+  
   const fetchProfile = async (token) => {
     try {
       const res = await axios.get(`${ipAdd}:5000/profile/`, {
@@ -47,7 +113,28 @@ const ProfileScreen = () => {
       console.error('Fetch profile error:', err);
     }
   };
-
+  const renderItem = ({ item }) => (
+    <View style={styles.personCard}>
+      <View style={styles.profileContainer}>
+        {item.profile_picture ? (
+          <Image source={{ uri: item.profile_picture }} style={styles.profileImage} />
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Text style={styles.initials}>{item.username.charAt(0).toUpperCase()}</Text>
+          </View>
+        )}
+        <Text style={styles.personName}>{item.username}</Text>
+      </View>
+      {modalType === 'followers' && (
+        <TouchableOpacity
+          style={styles.unfollowButton}
+          onPress={() => handleUnfollow(item.id)}
+        >
+          <Text style={styles.unfollowButtonText}>Unfollow</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
   const fetchMySkills = async (t) => {
     try {
       const res = await axios.get(`${ipAdd}:5000/user-skills/`, {
@@ -173,14 +260,84 @@ const ProfileScreen = () => {
       </Appbar.Header>
 
       <FlatList
-        data={[profile]} // We only have one profile, so we wrap it in an array for FlatList
-        keyExtractor={() => 'profile'} // Unique key for each list item
-        renderItem={({ item }) => (
+      data={[profile]} // We only have one profile, so we wrap it in an array for FlatList
+      keyExtractor={() => 'profile'} // Unique key for each list item
+      renderItem={({ item }) => (
+        <View style={styles.container}>
+          {/* Display Profile Image */}
+       
           <View style={styles.container}>
-            {item.profile_picture && (
-              <Image source={{ uri: item.profile_picture }} style={styles.profileImage} />
-            )}
+      {/* User Profile Section */}
+      <View style={styles.profileSection}>
+      {item.profile_picture ? (
+            <Image source={{ uri: item.profile_picture }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.placeholderImage}>
+              <Text style={styles.initials}>
+                {item.username?.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
+        
+      </View>
 
+     {/* Icons to toggle between modals */}
+     <View style={styles.iconContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            setModalType('followers');
+            setIsModalVisible(true);
+          }}
+        >
+          <Ionicons name="people-circle-outline" size={30} color="#333" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            setModalType('following');
+            setIsModalVisible(true);
+          }}
+        >
+          <Ionicons name="person-add-outline" size={30} color="#333" />
+        </TouchableOpacity>
+      </View>
+
+
+
+
+
+ {/* Modal to show either followers or following */}
+ <Modal
+  visible={isModalVisible}
+  animationType="slide"
+  transparent={true}
+  onRequestClose={() => setIsModalVisible(false)}
+>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>
+        {modalType === 'followers' ? 'People Following You' : 'People You Are Following'}
+      </Text>
+
+      <FlatList
+        data={modalType === 'followers' ? followers : peopleToFollow}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        style={styles.flatList}
+      />
+
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={() => setIsModalVisible(false)}
+      >
+        <Text style={styles.closeButtonText}>Close</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+    </View>
 <Card style={styles.card}>
               <Card.Title title="Basic Information" />
               <Card.Content>
@@ -429,19 +586,14 @@ const ProfileScreen = () => {
       />
     </>
   );
+  
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 10,
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
+ 
   card: {
     marginBottom: 10,
   },
@@ -518,6 +670,164 @@ const styles = StyleSheet.create({
   },
   pickerDisabled: {
     backgroundColor: '#e0e0e0',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#fafafa',
+    paddingTop: 20,
+    paddingHorizontal: 15,
+  },
+  profileSection: {
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 40,
+    marginBottom: 20,
+  },
+  placeholderImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 40,
+    backgroundColor: '#ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  initials: {
+    fontSize: 30,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  bio: {
+    fontSize: 14,
+    color: '#777',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  personCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 15,
+    marginBottom: 15,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  profileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  personName: {
+    fontSize: 18,
+    color: '#333',
+  },
+  
+ 
+  toggleButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginBottom: 15,
+    alignSelf: 'center',
+  },
+  toggleButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+ 
+  unfollowButton: {
+    backgroundColor: '#ff4d4d',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginLeft: 15,
+  },
+  unfollowButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // خلفية شفافة مظللة
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    width: '95%', // جعل المودال أعرض
+    maxHeight: '75%',
+    borderRadius: 25,
+    padding: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#2e7d32', // أخضر أنيق
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  flatList: {
+    marginBottom: 20,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 5,
+  },
+  closeButton: {
+    backgroundColor: '#43a047', // أخضر مريح
+    paddingVertical: 12,
+    paddingHorizontal: 70,
+    borderRadius: 12,
+    alignItems: 'center',
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
