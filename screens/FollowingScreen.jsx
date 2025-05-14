@@ -1,195 +1,238 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Image, Modal } from 'react-native';
+import {
+  View, Text, StyleSheet, TouchableOpacity, FlatList, Alert,
+  Image, Modal
+} from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ipAdd from '../scripts/helpers/ipAddress';
 import { Ionicons } from '@expo/vector-icons';
+import ipAdd from '../scripts/helpers/ipAddress';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const FollowingScreen = ({ navigation }) => {
-  const [peopleToFollow, setPeopleToFollow] = useState([]);
-  const [followers, setFollowers] = useState([]);
   const [token, setToken] = useState('');
-  const [viewFollowers, setViewFollowers] = useState(false);
-  const [userData, setUserData] = useState(null);  // State for user profile data
-  const [isModalVisible, setIsModalVisible] = useState(false); // For showing modals
-  const [modalType, setModalType] = useState(''); // To track which modal to show ('followers' or 'following')
+  const [userData, setUserData] = useState(null);
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState('');
 
-  // Fetch user data and other related data when token is available
+  useEffect(() => {
+    const getTokenAndFetch = async () => {
+      try {
+        const savedToken = await AsyncStorage.getItem('userToken');
+        if (savedToken) {
+          setToken(savedToken);
+          fetchProfile(savedToken);
+          fetchPosts(savedToken);
+          fetchFollowers(savedToken);
+          fetchFollowing(savedToken);
+        }
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
+    getTokenAndFetch();
+  }, []);
+
   const fetchProfile = async (token) => {
     try {
       const res = await axios.get(`${ipAdd}:5000/profile/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.data) {
-        setUserData(res.data); // Assuming the response data is structured correctly
-      } else {
-        console.error('Profile data is empty');
+      setUserData(res.data);
+    } catch (err) {
+      console.error('Profile error:', err);
+    }
+  };
+
+  const fetchPosts = async (token) => {
+    try {
+      const res = await axios.get(`${ipAdd}:5000/posts/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts(res.data || []);
+    } catch (err) {
+      console.error('Posts error:', err);
+    }
+  };
+
+  const fetchFollowers = async (token) => {
+    try {
+      const res = await axios.get(`${ipAdd}:5000/follow/followers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setFollowers(res.data);
+    } catch (err) {
+      console.error('Followers error:', err);
+    }
+  };
+
+  const fetchFollowing = async (token) => {
+    try {
+      const res = await axios.get(`${ipAdd}:5000/follow/following`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setFollowing(res.data);
+    } catch (err) {
+      console.error('Following error:', err);
+    }
+  };
+
+  const handleUnfollow = async (userId) => {
+    try {
+      const res = await axios.delete(`${ipAdd}:5000/follow/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 200) {
+        setFollowing((prev) => prev.filter((user) => user.id !== userId));
+        setFollowers((prev) => prev.filter((user) => user.id !== userId));
+        Alert.alert('Success', 'Unfollowed successfully');
       }
     } catch (err) {
-      console.error('Fetch profile error:', err);
+      Alert.alert('Error', 'Failed to connect to server');
     }
   };
 
-  useEffect(() => {
-    const getToken = async () => {
-      try {
-        const savedToken = await AsyncStorage.getItem('userToken');
-        if (savedToken) {
-          setToken(savedToken);
-          fetchProfile(savedToken);  // Now this function is defined
-        }
-      } catch (err) {
-        console.error('Error retrieving token:', err);
-      }
-    };
-
-    getToken();
-  }, []); // Only runs once when the component mounts
-
-  // Fetch people to follow and followers once token is set
-  useEffect(() => {
-    if (token) {
-      // Fetch people to follow
-      const fetchPeople = async () => {
-        try {
-          const response = await axios.get(`${ipAdd}:5000/follow/following`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setPeopleToFollow(response.data);
-        } catch (error) {
-          console.error('Error fetching people:', error);
-          Alert.alert('Error', 'Failed to fetch people data.');
-        }
-      };
-
-      // Fetch followers
-      const fetchFollowers = async () => {
-        try {
-          const response = await axios.get(`${ipAdd}:5000/follow/followers`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setFollowers(response.data);
-        } catch (error) {
-          console.error('Error fetching followers:', error);
-          Alert.alert('Error', 'Failed to fetch followers data.');
-        }
-      };
-
-      fetchPeople();
-      fetchFollowers();
-    }
-  }, [token]);  // Runs only when token is set
-
-  // Unfollow handler
-  const handleUnfollow = async (personId) => {
-    try {
-      const response = await axios.delete(`${ipAdd}:5000/follow/${personId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response.status === 200) {
-        Alert.alert('Success', 'Unfollowed successfully!');
-        setPeopleToFollow((prevState) =>
-          prevState.filter((person) => person.id !== personId)
-        );
-      } else {
-        Alert.alert('Error', 'Failed to unfollow.');
-      }
-    } catch (error) {
-      console.error('Unfollow error:', error);
-      Alert.alert('Error', 'Failed to connect to the server.');
-    }
-  };
-
-  // Render list item
-  const renderItem = ({ item }) => (
-    <View style={styles.personCard}>
-      <View style={styles.profileContainer}>
+  const renderUserItem = ({ item }) => (
+    <View style={styles.userCard}>
+      <View style={styles.userInfo}>
         {item.profile_picture ? (
-          <Image source={{ uri: item.profile_picture }} style={styles.profileImage} />
+          <Image source={{ uri: item.profile_picture }} style={styles.avatar} />
         ) : (
-          <View style={styles.placeholderImage}>
-            <Text style={styles.initials}>{item.username.charAt(0).toUpperCase()}</Text>
+          <View style={styles.avatarPlaceholder}>
+            <Text style={styles.avatarText}>{item.username[0].toUpperCase()}</Text>
           </View>
         )}
-        <Text style={styles.personName}>{item.username}</Text>
+        <Text style={styles.username}>{item.username}</Text>
       </View>
-      {modalType === 'followers' && (
-        <TouchableOpacity
-          style={styles.unfollowButton}
-          onPress={() => handleUnfollow(item.id)}
-        >
-          <Text style={styles.unfollowButtonText}>Unfollow</Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity onPress={() => handleUnfollow(item.id)} style={styles.unfollowBtn}>
+        <Text style={styles.unfollowText}>Unfollow</Text>
+      </TouchableOpacity>
     </View>
   );
 
+  const renderPostItem = ({ item }) => (
+    <View style={styles.postCard}>
+      <Text style={styles.postTitle}>{item.title}</Text>
+  
+      {item.images && item.images.length > 0 && (
+        <View style={styles.postImages}>
+          {item.images.map((img, i) => (
+            <Image key={i} source={{ uri: img }} style={styles.postImage} />
+          ))}
+        </View>
+      )}
+  
+      <Text style={styles.postContent}>{item.content}</Text>
+  
+      <View style={styles.tagsContainer}>
+        {item.tags && item.tags.map((tag, i) => (
+          <Text key={i} style={styles.tag}>#{tag}</Text>
+        ))}
+      </View>
+  
+      <Text style={styles.postDate}>
+        {new Date(item.created_at).toLocaleDateString()} {new Date(item.created_at).toLocaleTimeString()}
+      </Text>
+  
+      <View style={styles.reactions}>
+        <Ionicons name="heart-outline" size={20} color="#ff4d4d" />
+        <Ionicons name="chatbox-outline" size={20} color="#4CAF50" />
+      </View>
+    </View>
+  );
+  
   return (
     <View style={styles.container}>
-      {/* User Profile Section */}
-      <View style={styles.profileSection}>
-        {userData?.profile_picture ? (
-          <Image source={{ uri: userData.profile_picture }} style={styles.profileImage} />
-        ) : (
-          <View style={styles.placeholderImage}>
-            <Text style={styles.initials}>{userData?.username?.charAt(0).toUpperCase()}</Text>
-          </View>
-        )}
-        <Text style={styles.userName}>{userData?.username}</Text>
-        <Text style={styles.bio}>{userData?.bio || 'No bio available'}</Text>
+  <View style={styles.profileHeader}>
+  <View style={styles.profileInfo}>
+    {userData?.profile_picture ? (
+      <Image source={{ uri: userData.profile_picture }} style={styles.avatarBig} />
+    ) : (
+      <View style={styles.avatarPlaceholderBig}>
+        <Text style={styles.avatarTextBig}>{userData?.username?.[0].toUpperCase()}</Text>
       </View>
-
-      {/* Icons to toggle between modals */}
-      <View style={styles.iconContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            setModalType('followers');
-            setIsModalVisible(true);
-          }}
-        >
-          <Ionicons name="people-circle-outline" size={30} color="#333" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => {
-            setModalType('following');
-            setIsModalVisible(true);
-          }}
-        >
-          <Ionicons name="person-add-outline" size={30} color="#333" />
-        </TouchableOpacity>
+    )}
+    
+    <Text style={styles.usernameBig}>{userData?.username}</Text>
+    <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
+    
+    <Ionicons name="settings-outline" size={24} color="#333" />
+  </TouchableOpacity>
+    <View style={styles.followStats}>
+      <View style={styles.followStat}>
+        <Text style={styles.followLabel}>Followers</Text>
+        <View style={styles.actionButtons}>   
+  </View>
+        <Text style={styles.followCount}>{followers.length}</Text>
+        <TouchableOpacity onPress={() => { setModalType('followers'); setModalVisible(true); }} style={styles.iconButton}>
+      <Ionicons name="people-circle-outline" size={30} color="#333" />
+    </TouchableOpacity>
       </View>
+      <Text style={styles.followLabel}>               </Text>
+      <View style={styles.followStat}>
+        <Text style={styles.followLabel}>Following</Text>
+        <Text style={styles.followCount}>{following.length}</Text>
+        <TouchableOpacity onPress={() => { setModalType('following'); setModalVisible(true); }} style={styles.iconButton}>
+      <Ionicons name="person-add-outline" size={30} color="#333" />
+    </TouchableOpacity>
+      </View>
+      
+    </View>
+    <View style={styles.bioContainer}>
+      <View style={styles.bioRow}>
+        <Icon name="edit-note" size={20} color="#2e7d32" style={styles.bioIcon} />
+        <Text style={styles.bioText}>{userData?.bio || 'No bio available'}</Text>
+      </View>
+    </View>
+  </View>
+  
+  
 
-      {/* Modal to show either followers or following */}
+ 
+</View>
+
+{/* زر إضافة منشور */}
+<TouchableOpacity
+      style={styles.addPostButton}
+      onPress={() => navigation.navigate('CreatePost')}
+      activeOpacity={0.7}
+    >
+      <Ionicons name="add-circle" size={40} color="#4CAF50" />
+      <Text style={styles.addPostText}> Add post</Text>
+    </TouchableOpacity>
+
+
+    
+<FlatList
+  data={posts}
+  renderItem={renderPostItem}
+  keyExtractor={(item) => item.id}
+  style={styles.postList}
+/>
+
+     
+
       <Modal
-        visible={isModalVisible}
+        visible={modalVisible}
         animationType="slide"
-        transparent={true}
-        onRequestClose={() => setIsModalVisible(false)}
+        transparent
+        onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {modalType === 'followers' ? 'People Following You' : 'People You Are Following'}
+              {modalType === 'followers' ? 'Followers' : 'Following'}
             </Text>
-
             <FlatList
-              data={modalType === 'followers' ? followers : peopleToFollow}
-              renderItem={renderItem}
+              data={modalType === 'followers' ? followers : following}
+              renderItem={renderUserItem}
               keyExtractor={(item) => item.id.toString()}
             />
-
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setIsModalVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
+              <Text style={styles.closeText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -199,123 +242,223 @@ const FollowingScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fafafa',
-    paddingTop: 20,
-    paddingHorizontal: 15,
+  container: { flex: 1, backgroundColor: 'white', padding: 10 },
+ 
+  avatarBig: { width: 60, height: 60, borderRadius: 30 },
+  avatarPlaceholderBig: {
+    width: 60, height: 60, borderRadius: 30,
+    backgroundColor: '#c8e6c9', alignItems: 'center', justifyContent: 'center'
   },
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 20,
+  avatarTextBig: { fontSize: 24, color: '#388e3c' },
+  usernameBig: { fontSize: 20, fontWeight: 'bold' },
+  bio: { textAlign: 'center', marginVertical: 10, color: '#555' },
+  postCard: {
+    backgroundColor: '#E8F5E9', borderRadius: 10,
+    padding: 10, marginBottom: 10,
   },
-  profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 10,
-  },
-  placeholderImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#ddd',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  initials: {
-    fontSize: 30,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  bio: {
-    fontSize: 14,
-    color: '#777',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  iconContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
+  
+
   modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center'
   },
   modalContent: {
-    width: '90%',
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: '#fff', padding: 20, borderRadius: 15,
+    width: '80%', maxHeight: '70%'
+  },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
+  userCard: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    backgroundColor: '#f0f0f0', padding: 10, marginVertical: 5, borderRadius: 10,
+  },
+  userInfo: { flexDirection: 'row', alignItems: 'center' },
+  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
+  avatarPlaceholder: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: '#d0e8d0',
+    justifyContent: 'center', alignItems: 'center', marginRight: 10,
+  },
+  avatarText: { fontSize: 18, color: '#2e7d32' },
+  username: { fontSize: 16, fontWeight: '500' },
+  unfollowBtn: { backgroundColor: '#e57373', padding: 5, borderRadius: 5 },
+  unfollowText: { color: '#fff', fontWeight: 'bold' },
+  closeBtn: { marginTop: 10, alignItems: 'center' },
+  closeText: { color: '#4CAF50', fontSize: 16 },
+  bioContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e8f5e9',
     borderRadius: 10,
+    padding: 10,
+    marginVertical: 10,
+    marginHorizontal: 5,
     shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  closeButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  personCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 15,
-    marginBottom: 15,
-    borderRadius: 8,
-    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  profileContainer: {
+  bioText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#2e7d32',
+    textAlign: 'left',
+  },
+  bioRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
-  personName: {
-    fontSize: 18,
-    color: '#333',
+  bioIcon: {
+    marginRight: 6,
   },
-  unfollowButton: {
-    backgroundColor: '#ff4d4d',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+
+ 
+  profileHeader: {
+    flexDirection: 'row', 
     alignItems: 'center',
-    marginLeft: 15,
+    justifyContent: 'space-between', 
+    marginBottom: 10,
+    padding: 10, 
+    backgroundColor: '#fff', 
+    borderRadius: 10,
   },
-  unfollowButtonText: {
-    color: '#fff',
+  
+  profileInfo: {
+    flex: 1,
+    paddingLeft: 10,
+    alignItems: 'center',
+  },
+  
+  followText: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 5,
+    fontWeight: '500',
+  },
+  
+  actionButtons: {
+    flexDirection: 'row', 
+    gap: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  iconButton: {
+    padding: 10, // for better touch area
+  },
+  followStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  
+  followStat: {
+    alignItems: 'center',
+  },
+  
+  followLabel: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: '#2e7d32',
   },
+  
+  followCount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#388e3c',
+  },
+  postCard: {
+    backgroundColor: '#f9fff9',  // أخضر فاتح هادي
+    padding: 16,
+    marginVertical: 10,
+    marginHorizontal: 12,
+    borderRadius: 12,
+    shadowColor: '#2e7d32',      // ظل أخضر غامق
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  postTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#2e7d32',            // لون العنوان أخضر غامق
+    marginBottom: 8,
+    fontFamily: 'Arial',         // خط واضح
+  },
+  postImages: {
+    flexDirection: 'row',
+    marginBottom: 12,
+    justifyContent: 'flex-start',
+  },
+  postImage: {
+    width: 120,
+    height: 120,
+    marginRight: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#c8e6c9',      // حدود خفيفة للصورة بلون أخضر فاتح
+  },
+  postContent: {
+    fontSize: 16,
+    color: '#3e3e3e',
+    marginBottom: 12,
+    lineHeight: 22,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 12,
+  },
+  tag: {
+    backgroundColor: '#a5d6a7',  // أخضر فاتح متوسط
+    color: '#1b5e20',           // أخضر غامق للخط
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  postDate: {
+    fontSize: 12,
+    color: '#7b8a6b',            // رمادي مخضر
+    marginBottom: 14,
+    fontStyle: 'italic',
+  },
+  reactions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    borderTopColor: '#dcedc8',   // خط فاصل أخضر باهت
+    paddingTop: 10,
+  },
+  addPostButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e8f5e9',
+    paddingVertical: 6,      // تخفيف البادينغ عمودياً
+    paddingHorizontal: 16,   // توسعة عرضي متناسق
+    borderRadius: 20,        // تدوير أقل عشان يكون أنحف
+    marginVertical: 6,
+    alignSelf: 'center',
+    width: 130,              // عرض أقل شوي
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  
+  addPostText: {
+    color: '#4CAF50',
+    fontWeight: '600',        // أقل ثخانة شوي عشان يطلع مرتب
+    fontSize: 14,
+    marginLeft: 6,
+  },
+  
+  
 });
 
 export default FollowingScreen;

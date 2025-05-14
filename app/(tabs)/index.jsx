@@ -37,6 +37,7 @@ import AllOppertinitesUser from 'C:/Users/user/Videos/SOFT/front-mobile/screens/
 import RateParticipantsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/RateParticipantsScreen.jsx'; 
 import ManageTagsScreenOrg from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ManageTagsScreenOrg.jsx';
 import FollowingScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/FollowingScreen.jsx';
+import CreatePost from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CreatePost.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -74,6 +75,7 @@ const Index = () => {
         <Stack.Screen name="RateParticipantsScreen" component={RateParticipantsScreen} />
         <Stack.Screen name="ManageTagsScreenOrg" component={ManageTagsScreenOrg} />
         <Stack.Screen name="FollowingScreen" component={FollowingScreen} />
+        <Stack.Screen name="CreatePost" component={CreatePost} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -48,7 +48,7 @@ const homepage = () => {
       return;
     }
     if (userType === 'user') {
-      navigation.navigate('ProfileScreen');
+      navigation.navigate('FollowingScreen');
     } else if (userType === 'organization') {
       navigation.navigate('ProfileOrganizationScreen');
     } 
@@ -198,7 +198,7 @@ const homepage = () => {
 {userType === 'user' && (
   <TouchableOpacity
     style={styles.opportunityListButton}
-    onPress={() => navigation.navigate('FollowingScreen')}
+    onPress={() => navigation.navigate('CreatePost')}
   >
     <Text style={styles.opportunityListButtonText}>📍 follow screen </Text>
   </TouchableOpacity>
