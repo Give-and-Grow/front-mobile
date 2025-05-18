@@ -3,12 +3,19 @@ import { View, Text, Button, StyleSheet, ScrollView, Image } from 'react-native'
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from "../scripts/helpers/ipAddress";
+import LayoutWithFiltersAdmin from './LayoutWithFiltersAdmin';
+import BottomTabBar from './BottomTabBar';
 const BASE_URL = `${ipAdd}:5000`;  // Replace with your backend URL
 
 const adminfeaturerejectapprove = () => {
+   const [activeTab, setActiveTab] = useState('rejectaprrove');
+          
+        const handleProfilePress = () => {
+          navigation.navigate('adminfeaturerejectapprove');
+        };
   const [organizations, setOrganizations] = useState([]);
   const [token, setToken] = useState(null);
-
+ const [filter, setFilter] = useState("approve_reject");
   // Get token from AsyncStorage
   const getToken = async () => {
     try {
@@ -97,8 +104,12 @@ const adminfeaturerejectapprove = () => {
   useEffect(() => {
     fetchPendingOrganizations();  // Fetch pending organizations on load
   }, []);
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <LayoutWithFiltersAdmin onFilterSelect={handleFilterSelect} initialFilter="approve_reject">
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         <Text style={styles.title}>Admin Organization Management</Text>
@@ -143,6 +154,12 @@ const adminfeaturerejectapprove = () => {
         )}
       </View>
     </ScrollView>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </LayoutWithFiltersAdmin>
   );
 };
 

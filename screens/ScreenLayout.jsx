@@ -2,16 +2,17 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import OpportunityFilters from './OpportunityFilters';  // استدعاء الفلتر
 
-const ScreenLayout = ({ children, onFilterSelect }) => {
+const ScreenLayout = ({ children, onFilterSelect, initialFilter = 'All' }) => {
   return (
     <View style={styles.container}>
-      <OpportunityFilters onFilterSelect={onFilterSelect} />
+      <OpportunityFilters initialFilter={initialFilter} onFilterSelect={onFilterSelect} />
       <View style={styles.content}>
         {children}
       </View>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

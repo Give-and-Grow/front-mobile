@@ -6,7 +6,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';  // Import useNavigation
 import ipAdd from '../scripts/helpers/ipAddress';
+import BottomTabBar from './BottomTabBar';
 const ProfileOrganizationScreen = () => {
+  const [activeTab, setActiveTab] = useState('profileorg');
+        
+      const handleProfilePress = () => {
+        navigation.navigate('ProfileOrganizationScreen');
+      };
   const [profile, setProfile] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [token, setToken] = useState('');
@@ -185,6 +191,11 @@ const ProfileOrganizationScreen = () => {
           </Button>
         </View>
       </ScrollView>
+      <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
     </>
   );
 };

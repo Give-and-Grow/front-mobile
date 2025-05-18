@@ -8,16 +8,22 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
+import BottomTabBar from './BottomTabBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from '../scripts/helpers/ipAddress';
-
+import LayoutWithFiltersAdmin from './LayoutWithFiltersAdmin';
 const AdminFetchAllOrganizations = () => {
+   const [activeTab, setActiveTab] = useState('Deleteandfeatch');
+        
+      const handleProfilePress = () => {
+        navigation.navigate('AdminFetchAllOrganizations');
+      };
   const [organizations, setOrganizations] = useState([]);
   const [filteredOrgs, setFilteredOrgs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isDropdownVisible, setDropdownVisible] = useState(false);
-
+const [filter, setFilter] = useState("manage_orgs");
   const statusOptions = [
     { label: 'All', value: 'all' },
     { label: 'Approved', value: 'approved' },
@@ -104,8 +110,12 @@ const AdminFetchAllOrganizations = () => {
     }
     setFilteredOrgs(results);
   }, [searchQuery, filterStatus, organizations]);
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <LayoutWithFiltersAdmin onFilterSelect={handleFilterSelect} initialFilter="manage_orgs">
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>Organization Management</Text>
 
@@ -190,6 +200,12 @@ const AdminFetchAllOrganizations = () => {
         <Text style={styles.noResults}>No organizations match your search.</Text>
       )}
     </ScrollView>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </LayoutWithFiltersAdmin>
   );
 };
 

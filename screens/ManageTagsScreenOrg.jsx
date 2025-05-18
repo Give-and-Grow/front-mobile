@@ -4,15 +4,21 @@ import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from '../scripts/helpers/ipAddress';
-
+import LayoutWithFilters from './LayoutWithFiltersOrg';
+import BottomTabBar from './BottomTabBar';
 const ManageTagsScreenOrg = () => {
+  const [activeTab, setActiveTab] = useState('tages');
+          
+        const handleProfilePress = () => {
+          navigation.navigate('ManageTagsScreenOrg');
+        };
   const [opportunities, setOpportunities] = useState([]);
   const [tags, setTags] = useState({});
   const [availableTags, setAvailableTags] = useState([]);
   const [filteredTags, setFilteredTags] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [token, setToken] = useState(null);
-
+  const [filter, setFilter] = useState("tags");
   useEffect(() => {
     const fetchToken = async () => {
       try {
@@ -128,8 +134,12 @@ const ManageTagsScreenOrg = () => {
       setFilteredTags(availableTags); // Show all if search is cleared
     }
   };
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="tags">
     <ScrollView style={styles.container}>
       <View style={styles.searchContainer}>
       <Icon name="search" size={20} color="#fff" style={styles.searchIcon} />
@@ -197,6 +207,12 @@ const ManageTagsScreenOrg = () => {
         </View>
       ))}
     </ScrollView>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </LayoutWithFilters>
   );
 };
 
@@ -304,7 +320,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#66bb6a', // Light Green background
+    backgroundColor: '#388e3c', // Light Green background
     borderRadius: 15,
     paddingVertical: 5,
     paddingHorizontal: 15,

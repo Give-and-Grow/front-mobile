@@ -13,8 +13,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import ipAdd from '../scripts/helpers/ipAddress';
-
+import LayoutWithFilters from './LayoutWithFiltersOrg';
+import BottomTabBar from './BottomTabBar';
 const CreateJobOpportunity = () => {
+  const [activeTab, setActiveTab] = useState('creatjob');
+    
+  const handleProfilePress = () => {
+    navigation.navigate('CreateJobOpportunity');
+  };
+
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -25,6 +32,7 @@ const CreateJobOpportunity = () => {
   const [requiredPoints, setRequiredPoints] = useState('');
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [availableSkills, setAvailableSkills] = useState([]);
+      const [filter, setFilter] = useState("add_volunteer");
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -96,8 +104,12 @@ const CreateJobOpportunity = () => {
       ))}
     </View>
   );
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="add_job">
     <ScrollView contentContainerStyle={styles.container}>
       <Image
        source={require('../assets/images/joboppertinitues.png')}
@@ -190,6 +202,12 @@ const CreateJobOpportunity = () => {
 
 
     </ScrollView>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+   </LayoutWithFilters>
   );
 };
 

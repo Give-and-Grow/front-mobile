@@ -209,6 +209,7 @@ const FollowingScreen = ({ navigation }) => {
                 <Ionicons name="people-circle-outline" size={30} color="#333" />
               </TouchableOpacity>
             </View>
+            
             <View style={styles.followStat}>
               <Text style={styles.followLabel}>Following</Text>
               <Text style={styles.followCount}>{following.length}</Text>
@@ -382,14 +383,14 @@ const styles = StyleSheet.create({
   },
   followStats: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
     marginTop: 10,
     marginBottom: 10,
   },
-  
   followStat: {
+    marginRight: 30,  // تزيد المسافة بين العنصرين
     alignItems: 'center',
   },
+  
   
   followLabel: {
     fontSize: 16,
