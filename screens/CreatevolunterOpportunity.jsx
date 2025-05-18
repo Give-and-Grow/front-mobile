@@ -4,8 +4,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import ipAdd from '../scripts/helpers/ipAddress';
-
+import LayoutWithFilters from './LayoutWithFiltersOrg';
+import BottomTabBar from './BottomTabBar';
 const CreatevolunterOpportunity = () => {
+  const [activeTab, setActiveTab] = useState('creatvoulunter');
+    
+    const handleProfilePress = () => {
+      navigation.navigate('CreatevolunterOpportunity');
+    };
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -19,6 +25,9 @@ const CreatevolunterOpportunity = () => {
   const [availableSkills, setAvailableSkills] = useState([]);
   const [maxParticipants, setMaxParticipants] = useState('');
   const [basePoints, setBasePoints] = useState('');
+const [filter, setFilter] = useState("add_job");
+
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -94,8 +103,12 @@ const CreatevolunterOpportunity = () => {
       ))}
     </View>
   );
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="add_volunteer">
     <ScrollView contentContainerStyle={styles.container}>
       <Image
         source={require('../assets/images/volunteroppertunites.webp')}
@@ -210,6 +223,12 @@ const CreatevolunterOpportunity = () => {
         </>
       )}
     </ScrollView>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </LayoutWithFilters>
   );
 };
 

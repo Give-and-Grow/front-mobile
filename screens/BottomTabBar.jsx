@@ -21,49 +21,49 @@ const BottomTabBar = ({ activeTab, setActiveTab }) => {
 
     getUserRole();
   }, []);
-
-  const tabs = [
-    { name: 'Home', icon: 'home' },
-    { name: 'Search', icon: 'search' },
-    { name: 'FriendsPosts', icon: 'users' },
-    { name: 'Opportunities', icon: 'lightbulb-o' },
-    { name: 'Profile', icon: 'user' },
+  // 🟩 Tabs for each user type
+  const userTabs = [
+    { name: 'Home', icon: 'home', screen: 'homepage' },
+    { name: 'Search', icon: 'search', screen: 'Search' },
+    { name: 'FriendsPosts', icon: 'users', screen: 'FrindsPost' },
+    { name: 'Opportunities', icon: 'lightbulb-o', screen: 'AllOppertinitesUser' },
+    { name: 'Profile', icon: 'user', screen: 'FollowingScreen' },
   ];
 
-  const handleProfilePress = () => {
-    if (userType === 'admin') {
-      navigation.navigate('AdminProfile');
-    } else if(userType === 'organization') {
-      navigation.navigate('FollowScreenOrganization');
-    }
-    else if(userType === 'user') {
-      navigation.navigate('FollowingScreen');
-    }
+  const organizationTabs = [
+    { name: 'Home', icon: 'home', screen: 'homepage' },
+    { name: 'Search', icon: 'search', screen: 'Search' },
+    { name: 'Posts', icon: 'users', screen: 'FrindsPost' },
+    { name: 'ManageOpportunities', icon: 'lightbulb-o', screen: 'CreatevolunterOpportunity' },
+    { name: 'Profile', icon: 'user', screen: 'FollowScreenOrganization' },
+  ];
+
+  const adminTabs = [
+    { name: 'Home', icon: 'home', screen: 'homepage' },
+    { name: 'ManageOpportunities', icon: 'lightbulb-o', screen: 'AdminDashboardScreen' },
+    { name: 'Users', icon: 'users', screen: 'ManageUsers' },
+    { name: 'Reports', icon: 'lightbulb-o', screen: 'ReportsScreen' },
+    { name: 'Profile', icon: 'user', screen: 'AdminProfile' },
+  ];
+
+  let tabsToRender = [];
+
+  if (userType === 'user') tabsToRender = userTabs;
+  else if (userType === 'organization') tabsToRender = organizationTabs;
+  else if (userType === 'admin') tabsToRender = adminTabs;
+
+  const handleTabPress = (tab) => {
+    navigation.navigate(tab.screen);
+    setActiveTab(tab.name);
   };
 
   return (
     <View style={styles.bottomTab}>
-      {tabs.map((tab) => (
+      {tabsToRender.map((tab) => (
         <TouchableOpacity
           key={tab.name}
           style={styles.tabButton}
-          onPress={() => {
-            if (tab.name === 'Home') {
-              navigation.navigate('homepage');
-              setActiveTab('Home');
-            } else if (tab.name === 'Profile') {
-              handleProfilePress();
-              setActiveTab('Profile');
-            } else if (tab.name === 'FriendsPosts') {
-              navigation.navigate('FrindsPost');
-              setActiveTab('FrindsPost');
-            } else if (tab.name === 'Opportunities') {
-              navigation.navigate('AllOppertinitesUser');
-              setActiveTab('AllOppertinitesUser');
-            } else {
-              setActiveTab(tab.name);
-            }
-          }}
+          onPress={() => handleTabPress(tab)}
         >
           <Icon
             name={tab.icon}

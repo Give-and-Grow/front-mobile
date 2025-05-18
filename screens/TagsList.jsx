@@ -542,3 +542,13 @@ export default homepage;
 
 
 
+const handleProfilePress = () => {
+  if (userType === 'admin') {
+    navigation.navigate('AdminProfile');
+  } else if(userType === 'organization') {
+    navigation.navigate('FollowScreenOrganization');
+  }
+  else if(userType === 'user') {
+    navigation.navigate('FollowingScreen');
+  }
+};

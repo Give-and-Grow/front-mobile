@@ -18,7 +18,7 @@ const NearbyOpportunitiesUser = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-    const [filter, setFilter] = useState("Nearby");
+    const [filter, setFilter] = useState("add_volunteer");
   const [participationStatus, setParticipationStatus] = useState({});
   const [activeTab, setActiveTab] = useState('nearbody');
   useEffect(() => {

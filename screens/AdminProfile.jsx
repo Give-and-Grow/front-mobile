@@ -5,8 +5,14 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from '../scripts/helpers/ipAddress';
+import BottomTabBar from './BottomTabBar';
 import { useNavigation } from '@react-navigation/native';  // Import useNavigation
 const AdminProfile = () => {
+   const [activeTab, setActiveTab] = useState('adminprofile');
+        
+      const handleProfilePress = () => {
+        navigation.navigate('AdminProfile');
+      };
   const [admin, setAdmin] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [token, setToken] = useState('');
@@ -186,7 +192,13 @@ const AdminProfile = () => {
           </View>
         )}
       />
+         <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
     </>
+    
   );
 };
 

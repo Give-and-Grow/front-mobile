@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ipAdd from "../scripts/helpers/ipAddress";
-
+import LayoutWithFiltersAdmin from './LayoutWithFiltersAdmin';
+import BottomTabBar from './BottomTabBar';
 // مكون مخصص للموديل لإعادة استخدامه
 const CustomModal = ({ visible, title, children, onClose }) => {
   return (
@@ -35,7 +36,13 @@ const CustomModal = ({ visible, title, children, onClose }) => {
 };
 
 export default function AdminDashboardScreen({ navigation }) {
+  const [activeTab, setActiveTab] = useState('dashbord');
+      
+    const handleProfilePress = () => {
+      navigation.navigate('AdminDashboardScreen');
+    };
   const [token, setToken] = useState("");
+  const [filter, setFilter] = useState("dashboard");
   const [userInfo, setUserInfo] = useState({});
   const [newAdmin, setNewAdmin] = useState({
     email: "",
@@ -230,8 +237,12 @@ export default function AdminDashboardScreen({ navigation }) {
       },
     ]);
   };
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <LayoutWithFiltersAdmin onFilterSelect={handleFilterSelect} initialFilter="dashboard">
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Admin Dashboard</Text>
@@ -375,6 +386,12 @@ export default function AdminDashboardScreen({ navigation }) {
 </CustomModal>
 
     </ScrollView>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </LayoutWithFiltersAdmin>
   );
 }
 

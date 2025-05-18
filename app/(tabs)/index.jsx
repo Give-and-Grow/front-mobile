@@ -50,9 +50,10 @@ import VolunterOpprtunities from 'C:/Users/user/Videos/SOFT/front-mobile/screens
 import CFopportunitiesUser from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CFopportunitiesUser.jsx';
 import CFSimilarOpportunities from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CFSimilarOpportunities.jsx';
 import FollowScreenOrganization from 'C:/Users/user/Videos/SOFT/front-mobile/screens/FollowScreenOrganization.jsx';
-
-
-
+import OrganizationFilters from 'C:/Users/user/Videos/SOFT/front-mobile/screens/OrganizationFilters.jsx';
+import LayoutWithFiltersOrg from 'C:/Users/user/Videos/SOFT/front-mobile/screens/LayoutWithFiltersOrg.jsx';
+import AdminFilters from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdminFilters.jsx';
+import LayoutWithFiltersAdmin from 'C:/Users/user/Videos/SOFT/front-mobile/screens/LayoutWithFiltersAdmin.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -103,6 +104,10 @@ const Index = () => {
         <Stack.Screen name="CFopportunitiesUser" component={CFopportunitiesUser} />
         <Stack.Screen name="CFSimilarOpportunities" component={CFSimilarOpportunities} />
         <Stack.Screen name="FollowScreenOrganization" component={FollowScreenOrganization} />
+        <Stack.Screen name="OrganizationFilters" component={OrganizationFilters} />
+        <Stack.Screen name="LayoutWithFiltersOrg" component={LayoutWithFiltersOrg} />
+        <Stack.Screen name="AdminFilters" component={AdminFilters} />
+        <Stack.Screen name="LayoutWithFiltersAdmin" component={LayoutWithFiltersAdmin} />
       </Stack.Navigator>
     </NavigationContainer>
   );

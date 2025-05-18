@@ -17,8 +17,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from '../scripts/helpers/ipAddress';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons'; 
 import { Picker } from '@react-native-picker/picker'; 
-
+import LayoutWithFilters from './LayoutWithFiltersOrg';
+import BottomTabBar from './BottomTabBar';
 const RateParticipantsScreen = () => {
+  const [activeTab, setActiveTab] = useState('rate');
+      
+    const handleProfilePress = () => {
+      navigation.navigate('RateParticipantsScreen');
+    };
+    const [filter, setFilter] = useState("evaluate");
   const [opportunities, setOpportunities] = useState([]);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -168,8 +175,12 @@ const RateParticipantsScreen = () => {
       </View>
     </View>
   );
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="evaluate">
     <View style={styles.container}>
       <FlatList
         data={opportunities}
@@ -228,6 +239,12 @@ const RateParticipantsScreen = () => {
         </View>
       </Modal>
     </View>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </LayoutWithFilters>
   );
 };
 

@@ -3,7 +3,14 @@ import { View, Text, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, A
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from '../scripts/helpers/ipAddress';
+import LayoutWithFilters from './LayoutWithFiltersOrg';
+import BottomTabBar from './BottomTabBar';
 const OpportunitiesList = () => {
+   const [activeTab, setActiveTab] = useState('list');
+        
+      const handleProfilePress = () => {
+        navigation.navigate('OpportunitiesList');
+      };
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,7 +18,7 @@ const OpportunitiesList = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [modalType, setModalType] = useState(null); // 'details' or 'update'
-
+ const [filter, setFilter] = useState("list_all");
   const [updateData, setUpdateData] = useState({
     title: '',
     description: '',
@@ -194,8 +201,12 @@ const OpportunitiesList = () => {
   };
   if (loading) return <ActivityIndicator size="large" color="#4CAF50" />;
   if (error) return <Text style={styles.errorText}>{error}</Text>;
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="list_all">
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>Available Opportunities</Text>
       {opportunities.map((opportunity) => (
@@ -342,6 +353,12 @@ const OpportunitiesList = () => {
 
 
     </ScrollView>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </LayoutWithFilters>
   );
 };
 
