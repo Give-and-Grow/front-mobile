@@ -126,396 +126,419 @@ export default TagsList;
 */
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, FlatList, Alert,
-  Image, Modal
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StatusBar,
+  Dimensions,
+  ScrollView,
 } from 'react-native';
-import axios from 'axios';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
-import ipAdd from '../scripts/helpers/ipAddress';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const FollowingScreen = ({ navigation }) => {
-  const [token, setToken] = useState('');
-  const [userData, setUserData] = useState(null);
-  const [followers, setFollowers] = useState([]);
-  const [following, setFollowing] = useState([]);
-  const [posts, setPosts] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState('');
+const screenWidth = Dimensions.get('window').width;
+
+const homepage = () => {
+  const [showMenu, setShowMenu] = useState(false);
+  const [userType, setUserType] = useState(null); // 'volunteer' or 'organization'
+  const [opportunities, setOpportunities] = useState([]);
+  const [loadingOpps, setLoadingOpps] = useState(true);
+  const [errorOpps, setErrorOpps] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    const getTokenAndFetch = async () => {
+    // Retrieve the user's role from AsyncStorage to automatically set the user type
+    const getUserRole = async () => {
       try {
-        const savedToken = await AsyncStorage.getItem('userToken');
-        if (savedToken) {
-          setToken(savedToken);
-          fetchProfile(savedToken);
-          fetchPosts(savedToken);
-          fetchFollowers(savedToken);
-          fetchFollowing(savedToken);
-        }
+        const role = await AsyncStorage.getItem('userRole');
+        setUserType(role); // Set userType based on the stored role
+        console.log('Retrieved role:', role);
       } catch (error) {
-        console.error('Error retrieving token:', error);
+        console.error('Error retrieving user role:', error);
       }
     };
-    getTokenAndFetch();
-  }, []);
+    
+    getUserRole();
+  }, []
 
-  const fetchProfile = async (token) => {
-    try {
-      const res = await axios.get(`${ipAdd}:5000/profile/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUserData(res.data);
-    } catch (err) {
-      console.error('Profile error:', err);
+);
+
+  const handleProfilePress = () => {
+    if (!userType) {
+      alert('Please select a user type first');
+      return;
+    }
+    if (userType === 'user') {
+      navigation.navigate('FollowingScreen');
+    } else if (userType === 'organization') {
+      navigation.navigate('ProfileOrganizationScreen');
+    } 
+    else if (userType === 'admin') {
+      navigation.navigate('AdminProfile');
+    } 
+    else {
+      console.log('No user type selected');
     }
   };
-
-  const fetchPosts = async (token) => {
-    try {
-      const res = await axios.get(`${ipAdd}:5000/posts/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPosts(res.data || []);
-    } catch (err) {
-      console.error('Posts error:', err);
-    }
-  };
-
-  const fetchFollowers = async (token) => {
-    try {
-      const res = await axios.get(`${ipAdd}:5000/follow/followers`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFollowers(res.data);
-    } catch (err) {
-      console.error('Followers error:', err);
-    }
-  };
-
-  const fetchFollowing = async (token) => {
-    try {
-      const res = await axios.get(`${ipAdd}:5000/follow/following`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFollowing(res.data);
-    } catch (err) {
-      console.error('Following error:', err);
-    }
-  };
-
-  const handleUnfollow = async (userId) => {
-    try {
-      const res = await axios.delete(`${ipAdd}:5000/follow/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 200) {
-        setFollowing((prev) => prev.filter((user) => user.id !== userId));
-        setFollowers((prev) => prev.filter((user) => user.id !== userId));
-        Alert.alert('Success', 'Unfollowed successfully');
-      }
-    } catch (err) {
-      Alert.alert('Error', 'Failed to connect to server');
-    }
-  };
-
-  const renderUserItem = ({ item }) => (
-    <View style={styles.userCard}>
-      <View style={styles.userInfo}>
-        {item.profile_picture ? (
-          <Image source={{ uri: item.profile_picture }} style={styles.avatar} />
-        ) : (
-          <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarText}>{item.username[0].toUpperCase()}</Text>
-          </View>
-        )}
-        <Text style={styles.username}>{item.username}</Text>
-      </View>
-      <TouchableOpacity onPress={() => handleUnfollow(item.id)} style={styles.unfollowBtn}>
-        <Text style={styles.unfollowText}>Unfollow</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderPostItem = ({ item }) => (
-    <View style={styles.postCard}>
-      <Text style={styles.postTitle}>{item.title}</Text>
-      {item.images.length > 0 && (
-        <View style={styles.postImages}>
-          {item.images.map((img, i) => (
-            <Image key={i} source={{ uri: img }} style={styles.postImage} />
-          ))}
-        </View>
-      )}
-      <Text style={styles.postContent}>{item.content}</Text>
-      <View style={styles.reactions}>
-        <Ionicons name="heart-outline" size={20} color="#ff4d4d" />
-        <Ionicons name="chatbox-outline" size={20} color="#4CAF50" />
-      </View>
-    </View>
-  );
-  
 
   return (
-    <View style={styles.container}>
-  <View style={styles.profileHeader}>
-  <View style={styles.profileInfo}>
-    {userData?.profile_picture ? (
-      <Image source={{ uri: userData.profile_picture }} style={styles.avatarBig} />
-    ) : (
-      <View style={styles.avatarPlaceholderBig}>
-        <Text style={styles.avatarTextBig}>{userData?.username?.[0].toUpperCase()}</Text>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <StatusBar barStyle="dark-content" />
+
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerLeft}>
+          <Image source={require('../assets/images/volunter1.jpg')} style={styles.logo} />
+          <Text style={styles.logoText}>GIVE & GROW</Text>
+        </View>
+
+        <TouchableOpacity onPress={() => setShowMenu(!showMenu)} style={styles.menuButton}>
+          <Icon name="bars" size={25} color="#66bb6a" />
+        </TouchableOpacity>
+
+        {/* Profile Button */}
+        <TouchableOpacity onPress={handleProfilePress} style={styles.profileButton}>
+          <Icon name="user" size={25} color="#66bb6a" />
+        </TouchableOpacity>
+
+        {showMenu && (
+          <View style={styles.menuDropdown}>
+            {['Home', 'Discover Opportunities', 'Job', 'Search', 'Login', 'Sign Up', 'Help Center'].map((item, index) => (
+              <TouchableOpacity key={index}>
+                <Text style={styles.menuItem}>{item}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
-    )}
-    
-    <Text style={styles.usernameBig}>{userData?.username}</Text>
-    <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
-    
-    <Ionicons name="settings-outline" size={24} color="#333" />
-  </TouchableOpacity>
-    <View style={styles.followStats}>
-      <View style={styles.followStat}>
-        <Text style={styles.followLabel}>Followers</Text>
-        <View style={styles.actionButtons}>   
-  </View>
-        <Text style={styles.followCount}>{followers.length}</Text>
-        <TouchableOpacity onPress={() => { setModalType('followers'); setModalVisible(true); }} style={styles.iconButton}>
-      <Ionicons name="people-circle-outline" size={30} color="#333" />
-    </TouchableOpacity>
-      </View>
-      <Text style={styles.followLabel}>               </Text>
-      <View style={styles.followStat}>
-        <Text style={styles.followLabel}>Following</Text>
-        <Text style={styles.followCount}>{following.length}</Text>
-        <TouchableOpacity onPress={() => { setModalType('following'); setModalVisible(true); }} style={styles.iconButton}>
-      <Ionicons name="person-add-outline" size={30} color="#333" />
-    </TouchableOpacity>
-      </View>
-    </View>
-    <View style={styles.bioContainer}>
-      <View style={styles.bioRow}>
-        <Icon name="edit-note" size={20} color="#2e7d32" style={styles.bioIcon} />
-        <Text style={styles.bioText}>{userData?.bio || 'No bio available'}</Text>
-      </View>
-    </View>
-  </View>
 
-  
+      {/* Hero Section */}
+      <ImageBackground style={styles.background} resizeMode="cover">
+        <View style={styles.overlay}>
+          <Text style={styles.title}>Remarkable Network</Text>
+          <Text style={styles.subtitle}>
+            VolunteerMatch is the largest network in the nonprofit world, with the most
+            volunteers, nonprofits, and opportunities to make a difference.
+          </Text>
 
- 
-</View>
-
-
-
-    
-      <FlatList
-        data={posts}
-        renderItem={renderPostItem}
-        keyExtractor={(item) => item.id}
-        style={styles.postList}
-      />
-
-     
-
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {modalType === 'followers' ? 'Followers' : 'Following'}
-            </Text>
-            <FlatList
-              data={modalType === 'followers' ? followers : following}
-              renderItem={renderUserItem}
-              keyExtractor={(item) => item.id.toString()}
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Search City or Zip Code"
+              placeholderTextColor="#888"
+              value="Ramallah"
             />
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
-              <Text style={styles.closeText}>Close</Text>
+            <TouchableOpacity style={styles.searchButton}>
+              <Text style={styles.searchButtonText}>Find Opportunities</Text>
+              <Text style={styles.arrow}>›</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    </View>
+      </ImageBackground>
+
+      {/* Impact Section */}
+      <View style={styles.impactSection}>
+        <Image source={require('../assets/images/volunter2.jpg')} style={styles.impactImage} />
+        <View style={styles.impactTextContainer}>
+          <Text style={styles.impactTitle}>More people.{"\n"}More impact.</Text>
+          <Text style={styles.impactParagraph}>
+            VolunteerMatch is the most effective way to recruit highly qualified volunteers for your nonprofit.
+            We match you with people who are passionate about and committed to your cause, and who can help
+            when and where you need them.
+          </Text>
+          <Text style={styles.impactParagraph}>
+            And because volunteers are often donors as well, we make it easy for them to contribute their time and money.
+          </Text>
+        </View>
+      </View>
+
+      {/* Apply, Give, Grow Section */}
+      <View style={styles.stepsContainer}>
+        {[{
+          id: '01',
+          title: 'Apply',
+          image: require('../assets/images/volunter1.jpg'),
+          description: 'Business leaders may submit our form to take the first step in arranging your Give Day. We’ll then review your application and reach out to begin the planning process.',
+        }, {
+          id: '02',
+          title: 'Give',
+          image: require('../assets/images/volunter1.jpg'),
+          description: 'We create a unique, guided experience where you and your team can spend the day supporting people in your community without the usual daily distractions.',
+        }, {
+          id: '03',
+          title: 'Grow',
+          image: require('../assets/images/volunter1.jpg'),
+          description: 'Rediscover your purpose by giving back to the community. Make a lasting impact.',
+        }].map((step) => (
+          <View key={step.id} style={styles.stepCard}>
+            <Image source={step.image} style={styles.stepImage} />
+            <Text style={styles.stepTitle}>{step.title}</Text>
+            <Text style={styles.stepDescription}>{step.description}</Text>
+          </View>
+        ))}
+      </View>
+     
+      {userType === 'organization' && (
+  <View >
+    {/* Add Volunteering Opportunity Button */}
+    <TouchableOpacity
+      style={styles.opportunityListButton}
+      onPress={() => navigation.navigate('RateParticipantsScreen')}
+    >
+      <Text style={styles.opportunityListButtonText}>➕ Rate User </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.opportunityListButton}
+      onPress={() => navigation.navigate('ManageTagsScreenOrg')}
+    >
+      <Text style={styles.opportunityListButtonText}>➕ Manage tage  </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.opportunityListButton}
+      onPress={() => navigation.navigate('CreatevolunterOpportunity')}
+    >
+      <Text style={styles.opportunityListButtonText}>➕   Add Volunteering Opportunity</Text>
+    </TouchableOpacity>
+
+    {/* Add Job Opportunity Button */}
+    <TouchableOpacity
+      style={styles.opportunityListButton}
+      onPress={() => navigation.navigate('CreateJobOpportunity')}
+    >
+      <Text style={styles.opportunityListButtonText}>➕    Add Job Opportunity</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+  style={styles.opportunityListButton}
+  onPress={() => navigation.navigate('OpportunityList')}
+>
+  <Text style={styles.opportunityListButtonText}>📋 View All Opportunities</Text>
+</TouchableOpacity>
+
+  </View>
+)}
+{userType === 'user' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('CreatePost')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 follow screen </Text>
+  </TouchableOpacity>
+)}
+{userType === 'user' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('nearby_opportunitiesUser')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 View Nearby Opportunities</Text>
+  </TouchableOpacity>
+)}
+{userType === 'user' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('AllOppertinitesUser')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 View  Opportunities User </Text>
+  </TouchableOpacity>
+)}
+{userType === 'admin' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('AdminDashboardScreen')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 Dashbord admin</Text>
+  </TouchableOpacity>
+  
+)}
+{userType === 'admin' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('adminfeaturerejectapprove')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 adminfeature</Text>
+  </TouchableOpacity>
+  
+)}
+{userType === 'admin' && (
+  <TouchableOpacity
+    style={styles.opportunityListButton}
+    onPress={() => navigation.navigate('adminfeatchallorganizationandDelete')}
+  >
+    <Text style={styles.opportunityListButtonText}>📍 adminfeatureDelete or giveAll</Text>
+  </TouchableOpacity>
+  
+)}
+
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F5E9', padding: 10 },
- 
-  avatarBig: { width: 60, height: 60, borderRadius: 30 },
-  avatarPlaceholderBig: {
-    width: 60, height: 60, borderRadius: 30,
-    backgroundColor: '#c8e6c9', alignItems: 'center', justifyContent: 'center'
-  },
-  avatarTextBig: { fontSize: 24, color: '#388e3c' },
-  usernameBig: { fontSize: 20, fontWeight: 'bold' },
-  bio: { textAlign: 'center', marginVertical: 10, color: '#555' },
-  postCard: {
-    backgroundColor: '#E8F5E9', borderRadius: 10,
-    padding: 10, marginBottom: 10,
-  },
-  
-
-  modalOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center'
-  },
-  modalContent: {
-    backgroundColor: '#fff', padding: 20, borderRadius: 15,
-    width: '80%', maxHeight: '70%'
-  },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
-  userCard: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: '#f0f0f0', padding: 10, marginVertical: 5, borderRadius: 10,
-  },
-  userInfo: { flexDirection: 'row', alignItems: 'center' },
-  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
-  avatarPlaceholder: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: '#d0e8d0',
-    justifyContent: 'center', alignItems: 'center', marginRight: 10,
-  },
-  avatarText: { fontSize: 18, color: '#2e7d32' },
-  username: { fontSize: 16, fontWeight: '500' },
-  unfollowBtn: { backgroundColor: '#e57373', padding: 5, borderRadius: 5 },
-  unfollowText: { color: '#fff', fontWeight: 'bold' },
-  closeBtn: { marginTop: 10, alignItems: 'center' },
-  closeText: { color: '#4CAF50', fontSize: 16 },
-  postCard: {
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
     backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderLeftWidth: 5,
-    borderLeftColor: '#4CAF50',
   },
-  postTitle: {
-    fontSize: 18,
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+  },
+  logoText: {
+    fontSize: 20,
+    color: '#388e3c',
     fontWeight: 'bold',
-    color: '#2e7d32',
-    marginBottom: 8,
   },
-  postContent: {
-    fontSize: 14,
-    color: '#555',
-    marginTop: 8,
-  },
-  postImages: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 10,
-    gap: 6, // for better spacing between images
-  },
-  postImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-  },
-  reactions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 10,
-    gap: 20,
-  },
-  bioContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e8f5e9',
-    borderRadius: 10,
+  menuButton: {
     padding: 10,
-    marginVertical: 10,
-    marginHorizontal: 5,
+  },
+  profileButton: {
+    padding: 10,
+  },
+  menuDropdown: {
+    position: 'absolute',
+    top: 50,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 5,
+    elevation: 3,
+    padding: 10,
   },
-  bioText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#2e7d32',
-    textAlign: 'left',
+  menuItem: {
+    fontSize: 16,
+    paddingVertical: 5,
   },
-  bioRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  bioIcon: {
-    marginRight: 6,
-  },
-
- 
-  profileHeader: {
-    flexDirection: 'row', 
-    alignItems: 'center',
-    justifyContent: 'space-between', 
-    marginBottom: 10,
-    padding: 10, 
-    backgroundColor: '#fff', 
-    borderRadius: 10,
-  },
-  
-  profileInfo: {
-    flex: 1,
-    paddingLeft: 10,
-    alignItems: 'center',
-  },
-  
-  followText: {
-    fontSize: 14,
-    color: '#555',
-    marginTop: 5,
-    fontWeight: '500',
-  },
-  
-  actionButtons: {
-    flexDirection: 'row', 
-    gap: 20,
+  background: {
+    height: 300,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
-  iconButton: {
-    padding: 10, // for better touch area
-  },
-  followStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  
-  followStat: {
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+    borderRadius: 10,
     alignItems: 'center',
   },
-  
-  followLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2e7d32',
+  title: {
+    fontSize: 32,
+    color: '#fff',
+    fontWeight: 'bold',
   },
-  
-  followCount: {
+  subtitle: {
+    color: '#fff',
+    fontSize: 18,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  input: {
+    width: '70%',
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  searchButton: {
+    padding: 10,
+    backgroundColor: '#66bb6a',
+    borderRadius: 5,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  arrow: {
+    color: '#fff',
+    fontSize: 20,
+    marginLeft: 5,
+  },
+  impactSection: {
+    flexDirection: 'row',
+    padding: 20,
+    backgroundColor: '#f1f8e9',
+  },
+  impactImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 10,
+    marginRight: 20,
+  },
+  impactTextContainer: {
+    flex: 1,
+  },
+  impactTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  impactParagraph: {
+    fontSize: 16,
+    marginTop: 10,
+  },
+  stepsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 20,
+  },
+  stepCard: {
+    width: '30%',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  stepImage: {
+    width: '100%',
+    height: 100,
+    borderRadius: 10,
+  },
+  stepTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#388e3c',
+    marginTop: 10,
+  },
+  stepDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  opportunityListButton: {
+    margin: 20,
+    padding: 12,
+    backgroundColor: '#66bb6a',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  opportunityListButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   
-
 });
 
-export default FollowingScreen;
+export default homepage;
+
 
 
 

@@ -267,45 +267,7 @@ const ProfileScreen = () => {
           {/* Display Profile Image */}
        
           <View style={styles.container}>
-      {/* User Profile Section */}
-      <View style={styles.profileSection}>
-      {item.profile_picture ? (
-            <Image source={{ uri: item.profile_picture }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.placeholderImage}>
-              <Text style={styles.initials}>
-                {item.username?.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
-        
-      </View>
-
-     {/* Icons to toggle between modals */}
-     <View style={styles.iconContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            setModalType('followers');
-            setIsModalVisible(true);
-          }}
-        >
-          <Ionicons name="people-circle-outline" size={30} color="#333" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => {
-            setModalType('following');
-            setIsModalVisible(true);
-          }}
-        >
-          <Ionicons name="person-add-outline" size={30} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-
-
-
-
+   
  {/* Modal to show either followers or following */}
  <Modal
   visible={isModalVisible}
