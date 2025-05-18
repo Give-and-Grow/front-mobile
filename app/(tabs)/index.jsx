@@ -7,7 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import registerNNPushToken from 'native-notify';
 import * as Notifications from 'expo-notifications';
-
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 
 import WelcomeScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/Welcome.jsx';
@@ -38,6 +38,21 @@ import RateParticipantsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/scree
 import ManageTagsScreenOrg from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ManageTagsScreenOrg.jsx';
 import FollowingScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/FollowingScreen.jsx';
 import CreatePost from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CreatePost.jsx';
+import EditPostScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/EditPostScreen.jsx';
+import BottomTabBar from  'C:/Users/user/Videos/SOFT/front-mobile/screens/BottomTabBar.jsx';
+import TopTabBar from 'C:/Users/user/Videos/SOFT/front-mobile/screens/TopTabBar.jsx';
+import FrindsPost from 'C:/Users/user/Videos/SOFT/front-mobile/screens/FrindsPost.jsx';
+import CommentsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CommentsScreen.jsx';
+import OpportunityFilters from 'C:/Users/user/Videos/SOFT/front-mobile/screens/OpportunityFilters.jsx';
+import ScreenLayout from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ScreenLayout.jsx';
+import JobOpportunities from 'C:/Users/user/Videos/SOFT/front-mobile/screens/JobOpportunities.jsx';
+import VolunterOpprtunities from 'C:/Users/user/Videos/SOFT/front-mobile/screens/VolunterOpprtunities.jsx';
+import CFopportunitiesUser from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CFopportunitiesUser.jsx';
+import CFSimilarOpportunities from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CFSimilarOpportunities.jsx';
+import FollowScreenOrganization from 'C:/Users/user/Videos/SOFT/front-mobile/screens/FollowScreenOrganization.jsx';
+
+
+
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -76,6 +91,18 @@ const Index = () => {
         <Stack.Screen name="ManageTagsScreenOrg" component={ManageTagsScreenOrg} />
         <Stack.Screen name="FollowingScreen" component={FollowingScreen} />
         <Stack.Screen name="CreatePost" component={CreatePost} />
+        <Stack.Screen name="EditPostScreen" component={EditPostScreen} />
+        <Stack.Screen name="BottomTabs" component={BottomTabBar} />
+        <Stack.Screen name="TobTabs" component={TopTabBar} />
+        <Stack.Screen name="FrindsPost" component={FrindsPost} />
+        <Stack.Screen name="CommentsScreen" component={CommentsScreen} />
+        <Stack.Screen name="OpportunityFilters" component={OpportunityFilters} />
+        <Stack.Screen name="ScreenLayout" component={ScreenLayout} />
+        <Stack.Screen name="JobOpportunities" component={JobOpportunities} />
+        <Stack.Screen name="VolunterOpprtunities" component={VolunterOpprtunities} />
+        <Stack.Screen name="CFopportunitiesUser" component={CFopportunitiesUser} />
+        <Stack.Screen name="CFSimilarOpportunities" component={CFSimilarOpportunities} />
+        <Stack.Screen name="FollowScreenOrganization" component={FollowScreenOrganization} />
       </Stack.Navigator>
     </NavigationContainer>
   );

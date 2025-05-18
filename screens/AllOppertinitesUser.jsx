@@ -11,13 +11,19 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ipAdd from '../scripts/helpers/ipAddress';
-
+import ScreenLayout from '../screens/ScreenLayout'; 
+import BottomTabBar from './BottomTabBar';
 const AllOppertinitesUser = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [participationStatus, setParticipationStatus] = useState({});
-
+  const [filter, setFilter] = useState("All");
+  const handleProfilePress = () => {
+    navigation.navigate('AllOppertinitesUser');
+  
+  };
+  const [activeTab, setActiveTab] = useState('oppuser');
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
@@ -156,8 +162,12 @@ const AllOppertinitesUser = () => {
       alert("No application link available for this opportunity.");
     }
   };
-
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <ScreenLayout onFilterSelect={handleFilterSelect} initialFilter="All">
     <View style={styles.container}>
       <Text style={styles.title}>🌱 Opportunities</Text>
       {loading && <ActivityIndicator size="large" color="#2e7d32" />}
@@ -231,6 +241,15 @@ const AllOppertinitesUser = () => {
         ))}
       </ScrollView>
     </View>
+    <View>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </View>
+    </ScreenLayout>
+
   );
 };
 const styles = StyleSheet.create({

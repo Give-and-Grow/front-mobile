@@ -10,7 +10,7 @@ import ipAdd from '../scripts/helpers/ipAddress';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomTabBar from './BottomTabBar';
 import TopTabBar from './TopTabBar';
-const FollowingScreen = ({ navigation }) => {
+const FollowScreenOrganization = ({ navigation }) => {
   const [liked, setLiked] = useState(false);
   
   const toggleLike = () => {
@@ -198,7 +198,7 @@ const FollowingScreen = ({ navigation }) => {
             </View>
           )}
           <Text style={styles.usernameBig}>{userData?.username}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
+          <TouchableOpacity onPress={() => navigation.navigate('ProfileOrganizationScreen')}>
             <Ionicons name="settings-outline" size={24} color="#333" />
           </TouchableOpacity>
           <View style={styles.followStats}>
@@ -510,4 +510,4 @@ const styles = StyleSheet.create({
   
 });
 
-export default FollowingScreen;
+export default FollowScreenOrganization;

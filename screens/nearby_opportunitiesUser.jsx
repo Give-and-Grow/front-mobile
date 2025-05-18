@@ -12,13 +12,15 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ipAdd from "../scripts/helpers/ipAddress";
-
+import ScreenLayout from '../screens/ScreenLayout'; 
+import BottomTabBar from './BottomTabBar';
 const NearbyOpportunitiesUser = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+    const [filter, setFilter] = useState("Nearby");
   const [participationStatus, setParticipationStatus] = useState({});
-
+  const [activeTab, setActiveTab] = useState('nearbody');
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
@@ -137,7 +139,9 @@ const NearbyOpportunitiesUser = () => {
       alert('An error occurred while withdrawing');
     }
   };
-
+  const handleProfilePress = () => {
+    navigation.navigate('nearby_opportunitiesUser');
+  };
   const handleCheckParticipation = async (oppId) => {
     const token = await AsyncStorage.getItem('userToken');
     if (!token) {
@@ -182,8 +186,13 @@ const NearbyOpportunitiesUser = () => {
       alert("No application link available for this opportunity.");
     }
   };
-
+  
+  const handleFilterSelect = (selectedFilter) => {
+    setFilter(selectedFilter);
+    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+  };
   return (
+    <ScreenLayout onFilterSelect={handleFilterSelect} initialFilter="Nearby">
     <View style={styles.container}>
       <Text style={styles.title}>🌍 Nearby Opportunities</Text>
       {loading && <ActivityIndicator size="large" color="#2e7d32" />}
@@ -245,15 +254,42 @@ const NearbyOpportunitiesUser = () => {
                            <Text style={styles.buttonText}>🔍 Check Participation</Text>
                          </TouchableOpacity>
                        </View>
+ 
           </View>
         ))}
       </ScrollView>
+ 
     </View>
+    <View>
+    <BottomTabBar
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  handleProfilePress={handleProfilePress}
+/>
+    </View>
+    </ScreenLayout>
+    
   );
 };
 
 const styles = StyleSheet.create({
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,  // أقل padding يمين ويسار لتجنب القطع
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  
+  
   container: {
+  width: '100%',
     flex: 1,
     backgroundColor: "#f1fdf5",
     padding: 20,
