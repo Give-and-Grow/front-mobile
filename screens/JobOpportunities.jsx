@@ -68,7 +68,7 @@ const JobOpportunities = () => {
     if (!token) return Alert.alert('Error', 'Please login first');
   
     try {
-      const response = await fetch(`${ipAdd}:5000/opportunity-participants/opportunities/${jobId}/join`, {
+      const response = await fetch(`${ipAdd}:5000/user-participation/${jobId}/join`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -103,7 +103,7 @@ const JobOpportunities = () => {
     if (!token) return Alert.alert('Error', 'Please login first');
 
     try {
-      const response = await fetch(`${ipAdd}:5000/opportunity-participants/opportunities/${jobId}/withdraw`, {
+      const response = await fetch(`${ipAdd}:5000/user-participation/${jobId}/withdraw`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

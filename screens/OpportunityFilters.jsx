@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // أيقونات
+import { Dropdown } from 'react-native-element-dropdown';
 
 const OpportunityFilters = ({ onFilterSelect = () => {}, initialFilter = 'All' }) => {
   const [selected, setSelected] = useState(initialFilter);
