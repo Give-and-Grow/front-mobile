@@ -55,6 +55,10 @@ import LayoutWithFiltersOrg from 'C:/Users/user/Videos/SOFT/front-mobile/screens
 import AdminFilters from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdminFilters.jsx';
 import LayoutWithFiltersAdmin from 'C:/Users/user/Videos/SOFT/front-mobile/screens/LayoutWithFiltersAdmin.jsx';
 import FilterComponent from 'C:/Users/user/Videos/SOFT/front-mobile/screens/FilterComponent.jsx';
+import ApplicationsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ApplicationsScreen.jsx';
+import EvaluateScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/EvaluateScreen.jsx';
+
+
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -110,6 +114,8 @@ const Index = () => {
         <Stack.Screen name="AdminFilters" component={AdminFilters} />
         <Stack.Screen name="LayoutWithFiltersAdmin" component={LayoutWithFiltersAdmin} />
         <Stack.Screen name="FilterComponent" component={FilterComponent} />
+        <Stack.Screen name="EvaluateScreen" component={EvaluateScreen} />
+        <Stack.Screen name="ApplicationsScreen" component={ApplicationsScreen} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );

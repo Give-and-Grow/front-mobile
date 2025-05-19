@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ipAdd from "../scripts/helpers/ipAddress";
 import ScreenLayout from '../screens/ScreenLayout'; 
 import BottomTabBar from './BottomTabBar';
-
+import FilterComponebt from './FilterComponent';
 const NearbyOpportunitiesUser = () => {
    const [summaries, setSummaries] = useState({});
   const [summaryLoading, setSummaryLoading] = useState({});
@@ -234,6 +234,7 @@ const NearbyOpportunitiesUser = () => {
     // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
   };
   return (
+ 
     <ScreenLayout onFilterSelect={handleFilterSelect} initialFilter="Nearby">
     <View style={styles.container}>
       <Text style={styles.title}>🌍 Nearby Opportunities</Text>
@@ -345,7 +346,7 @@ const NearbyOpportunitiesUser = () => {
 />
     </View>
     </ScreenLayout>
-    
+  
   );
 };
 

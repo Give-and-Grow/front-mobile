@@ -34,8 +34,8 @@ const FilterComponent = ({ onApplyFilters }) => {
       icon: 'information-outline',
       key: 'status',
       options: [
-        { label: 'Open', value: 'OPEN' },
-        { label: 'Closed', value: 'CLOSED' }
+        { label: 'Open', value: 'Open' },
+        { label: 'Closed', value: 'Closed' }
       ]
     },
     {
@@ -43,8 +43,8 @@ const FilterComponent = ({ onApplyFilters }) => {
       icon: 'briefcase-check-outline',
       key: 'opportunity_type',
       options: [
-        { label: 'Job', value: 'JOB' },
-        { label: 'Volunteer', value: 'VOLUNTEER' }
+        { label: 'Job', value: 'Job' },
+        { label: 'Volunteer', value: 'Volunteer' }
       ]
     },
     {
@@ -55,49 +55,7 @@ const FilterComponent = ({ onApplyFilters }) => {
         { label: 'Ramallah', value: 'Ramallah' },
         { label: 'Jerusalem', value: 'Jerusalem' },
         { label: 'Gaza', value: 'Gaza' },
-        { label: 'Nablus', value: 'Nablus' },
-        { label: 'Hebron', value: 'Hebron' },
-        { label: 'Bethlehem', value: 'Bethlehem' },
-        { label: 'Jenin', value: 'Jenin' },
-        { label: 'Tulkarm', value: 'Tulkarm' },
-        { label: 'Qalqilya', value: 'Qalqilya' },
-        { label: 'Salfit', value: 'Salfit' },
-        { label: 'Tubas', value: 'Tubas' },
-        { label: 'Rafah', value: 'Rafah' },
-        { label: 'Khan Younis', value: 'Khan Younis' },
-        // الأردن
-        { label: 'Amman', value: 'Amman' },
-        { label: 'Irbid', value: 'Irbid' },
-        { label: 'Zarqa', value: 'Zarqa' },
-        { label: 'Aqaba', value: 'Aqaba' },
-        { label: 'Salt', value: 'Salt' },
-        { label: 'Madaba', value: 'Madaba' },
-        // لبنان
-        { label: 'Beirut', value: 'Beirut' },
-        { label: 'Tripoli', value: 'Tripoli' },
-        { label: 'Sidon', value: 'Sidon' },
-        // سوريا
-        { label: 'Damascus', value: 'Damascus' },
-        { label: 'Aleppo', value: 'Aleppo' },
-        { label: 'Homs', value: 'Homs' },
-        // مصر
-        { label: 'Cairo', value: 'Cairo' },
-        { label: 'Alexandria', value: 'Alexandria' },
-        { label: 'Giza', value: 'Giza' },
-        // العراق
-        { label: 'Baghdad', value: 'Baghdad' },
-        { label: 'Basra', value: 'Basra' },
-        { label: 'Erbil', value: 'Erbil' },
-        // الخليج
-        { label: 'Riyadh', value: 'Riyadh' },
-        { label: 'Jeddah', value: 'Jeddah' },
-        { label: 'Mecca', value: 'Mecca' },
-        { label: 'Doha', value: 'Doha' },
-        { label: 'Dubai', value: 'Dubai' },
-        { label: 'Abu Dhabi', value: 'Abu Dhabi' },
-        { label: 'Kuwait City', value: 'Kuwait City' },
-        { label: 'Manama', value: 'Manama' },
-        { label: 'Muscat', value: 'Muscat' },
+      
       ]
     },
     {
@@ -108,33 +66,7 @@ const FilterComponent = ({ onApplyFilters }) => {
         { label: 'Programming', value: '1' },
         { label: 'Design', value: '2' },
         { label: 'Marketing', value: '3' },
-        { label: 'Project Management', value: '4' },
-        { label: 'Data Analysis', value: '5' },
-        { label: 'Public Speaking', value: '6' },
-        { label: 'Teaching', value: '7' },
-        { label: 'Writing & Editing', value: '8' },
-        { label: 'Translation', value: '9' },
-        { label: 'Photography', value: '10' },
-        { label: 'Video Editing', value: '11' },
-        { label: 'Customer Service', value: '12' },
-        { label: 'Event Planning', value: '13' },
-        { label: 'Social Media Management', value: '14' },
-        { label: 'SEO', value: '15' },
-        { label: 'Cybersecurity', value: '16' },
-        { label: 'UI/UX Design', value: '17' },
-        { label: 'Fundraising', value: '18' },
-        { label: 'Human Resources', value: '19' },
-        { label: 'Accounting', value: '20' },
-        { label: 'Healthcare Support', value: '21' },
-        { label: 'First Aid', value: '22' },
-        { label: 'Logistics', value: '23' },
-        { label: 'Software Testing', value: '24' },
-        { label: 'Mentoring', value: '25' },
-        { label: 'Leadership', value: '26' },
-        { label: 'Sales', value: '27' },
-        { label: 'Database Management', value: '28' },
-        { label: 'Cloud Computing', value: '29' },
-        { label: 'Machine Learning', value: '30' }
+     
       ]
     },
     {
@@ -145,24 +77,7 @@ const FilterComponent = ({ onApplyFilters }) => {
         { label: 'Red Crescent', value: '10' },
         { label: 'UNICEF', value: '11' },
         { label: 'Green NGO', value: '12' },
-        { label: 'Doctors Without Borders', value: '13' },
-        { label: 'Save the Children', value: '14' },
-        { label: 'Palestinian Medical Relief Society', value: '15' },
-        { label: 'Arab Youth Climate Movement', value: '16' },
-        { label: 'Islamic Relief Worldwide', value: '17' },
-        { label: 'CARE International', value: '18' },
-        { label: 'World Food Programme', value: '19' },
-        { label: 'United Nations Development Programme (UNDP)', value: '20' },
-        { label: 'Rebuilding Alliance', value: '21' },
-        { label: 'ANERA (American Near East Refugee Aid)', value: '22' },
-        { label: 'Tamer Institute for Community Education', value: '23' },
-        { label: 'Al Nayzak Organization', value: '24' },
-        { label: 'Right To Play', value: '25' },
-        { label: 'ActionAid Palestine', value: '26' },
-        { label: 'OXFAM', value: '27' },
-        { label: 'YMCA Palestine', value: '28' },
-        { label: 'Youth Without Borders', value: '29' },
-        { label: 'Terre des hommes', value: '30' }
+       
       ]
     },
     {
@@ -188,13 +103,7 @@ const FilterComponent = ({ onApplyFilters }) => {
       options: [
         { label: '06:00', value: '06:00' },
         { label: '08:00', value: '08:00' },
-        { label: '10:00', value: '10:00' },
-        { label: '12:00', value: '12:00' },
-        { label: '14:00', value: '14:00' },
-        { label: '16:00', value: '16:00' },
-        { label: '18:00', value: '18:00' },
-        { label: '20:00', value: '20:00' },
-        { label: '22:00', value: '22:00' }
+      
       ]
     },
     {
@@ -203,12 +112,8 @@ const FilterComponent = ({ onApplyFilters }) => {
       key: 'volunteer_days',
       options: [
         { label: 'Monday', value: 'Monday' },
-        { label: 'Tuesday', value: 'Tuesday' },
-        { label: 'Wednesday', value: 'Wednesday' },
-        { label: 'Thursday', value: 'Thursday' },
-        { label: 'Friday', value: 'Friday' },
-        { label: 'Saturday', value: 'Saturday' },
-        { label: 'Sunday', value: 'Sunday' }
+       { label: 'Tuesday', value: 'Tuesday' },
+       
       ]
     }
   ];

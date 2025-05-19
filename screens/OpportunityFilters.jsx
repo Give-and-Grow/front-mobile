@@ -11,9 +11,9 @@ const OpportunityFilters = ({ onFilterSelect = () => {}, initialFilter = 'All' }
   const filters = [
     { label: 'All Opportunities', value: 'All', screen: 'AllOppertinitesUser', icon: 'format-list-bulleted' },
     { label: 'Nearby Opportunities', value: 'Nearby', screen: 'nearby_opportunitiesUser', icon: 'map-marker-radius' },
-    { label: 'Jobs', value: 'Jobs', screen: 'JobOpportunities', icon: 'briefcase-outline' },
-    { label: 'Volunteering', value: 'Volunteer', screen: 'VolunterOpprtunities', icon: 'account-heart-outline' },
-    { label: 'CF Opportunities', value: 'CF', screen: 'CFopportunitiesUser', icon: 'star-circle-outline' },
+    { label: 'Best Fit Jobs', value: 'Jobs', screen: 'JobOpportunities', icon: 'briefcase-check' },
+    { label: 'Best Fit Volunteering', value: 'Volunteer', screen: 'VolunterOpprtunities', icon: 'account-star' },
+    { label: 'Evaluate Opportunities', value: 'Eval', screen: 'ApplicationsScreen', icon: 'star-circle-outline' },
     { label: 'Similar to You', value: 'Similar', screen: 'CFSimilarOpportunities', icon: 'account-multiple-outline' },
   ];
 
