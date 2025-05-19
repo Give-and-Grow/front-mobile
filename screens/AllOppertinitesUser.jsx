@@ -14,6 +14,9 @@ import ipAdd from '../scripts/helpers/ipAddress';
 import ScreenLayout from '../screens/ScreenLayout'; 
 import BottomTabBar from './BottomTabBar';
 const AllOppertinitesUser = () => {
+  const [summaries, setSummaries] = useState({});
+const [summaryLoading, setSummaryLoading] = useState({});
+
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -65,7 +68,7 @@ const AllOppertinitesUser = () => {
     }
 
     try {
-      const response = await fetch(`${ipAdd}:5000/opportunity-participants/opportunities/${oppId}/join`, {
+      const response = await fetch(`${ipAdd}:5000/user-participation/${oppId}/join`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -95,7 +98,7 @@ const AllOppertinitesUser = () => {
     }
 
     try {
-      const response = await fetch(`${ipAdd}:5000/opportunity-participants/opportunities/${oppId}/withdraw`, {
+      const response = await fetch(`${ipAdd}:5000/user-participation/${oppId}/withdraw`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -162,6 +165,49 @@ const AllOppertinitesUser = () => {
       alert("No application link available for this opportunity.");
     }
   };
+
+  const fetchSummary = async (oppId) => {
+    if (summaries[oppId]) {
+      // التلخيص موجود، نرجعه فوراً
+      return summaries[oppId];
+    }
+  
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) {
+      alert('Please login first');
+      return;
+    }
+  
+    setSummaryLoading((prev) => ({ ...prev, [oppId]: true }));
+  
+    try {
+      const response = await fetch(`${ipAdd}:5000/opportunities/summary/${oppId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const data = await response.json();
+      console.log("Summary data for oppId", oppId, data);
+  
+      if (response.ok && data.summary) {
+        setSummaries((prev) => ({ ...prev, [oppId]: data.summary }));
+        return data.summary;  // ترجع التلخيص اللي جاك من السيرفر
+      } else {
+        alert(data.msg || 'Failed to fetch summary');
+        return null;
+      }
+    } catch (err) {
+      console.error("Error fetching summary:", err);
+      alert('An error occurred while fetching summary');
+      return null;
+    } finally {
+      setSummaryLoading((prev) => ({ ...prev, [oppId]: false }));
+    }
+  };
+  
+
+  
   const handleFilterSelect = (selectedFilter) => {
     setFilter(selectedFilter);
     // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
@@ -179,7 +225,23 @@ const AllOppertinitesUser = () => {
               <Image source={{ uri: opp.image_url }} style={styles.cardImage} />
             )}
             <Text style={styles.cardTitle}>🎯 {opp.title}</Text>
-
+  
+             <Text style={styles.cardLabel}>🏢 Organization name : </Text>
+             <Text style={styles.cardText}> {opp.organization_name}</Text>
+             <View style={styles.separator} />
+             {opp.volunteer_days && opp.volunteer_days.length > 0 && (
+  <>
+    <Text style={styles.cardLabel}>📆 Volunteer Days:</Text>
+    <Text style={styles.cardText}>{opp.volunteer_days.join(", ")}</Text>
+  </>
+)}
+   <View style={styles.separator} />
+<Text style={styles.cardLabel}>🕓 Time:</Text>
+<Text style={styles.cardText}>
+  From {opp.start_time} to {opp.end_time}
+</Text>
+       
+ 
             {/* Badges */}
             <View style={styles.badgeContainer}>
               <Text style={styles.badge}>📍 {opp.location}</Text>
@@ -188,6 +250,26 @@ const AllOppertinitesUser = () => {
 
             <Text style={styles.cardLabel}>📝 Description: </Text>
             <Text style={styles.cardText}>{opp.description}</Text>
+            <View style={{ marginTop: 10 }}>
+  {summaryLoading[opp.id] ? (
+    <ActivityIndicator size="small" color="#388e3c" />
+  ) : summaries[opp.id] ? (
+    <View style={{ backgroundColor: '#e8f5e9', padding: 10, borderRadius: 10 }}>
+      <Text style={{ color: '#2e7d32', fontWeight: 'bold' }}>📌 Summary:</Text>
+      <Text style={{ color: '#1b5e20' }}>{summaries[opp.id].summary}</Text>
+
+    </View>
+  ) : (
+    <TouchableOpacity
+      style={{ backgroundColor: '#a5d6a7', padding: 10, borderRadius: 10, marginTop: 5 }}
+      onPress={() => fetchSummary(opp.id)}
+    >
+      <Text style={{ color: '#1b5e20', fontWeight: 'bold', textAlign: 'center' }}>
+        ✨ View Summary
+      </Text>
+    </TouchableOpacity>
+  )}
+</View>
 
             <View style={styles.separator} />
 
@@ -355,6 +437,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#81c784",
     marginVertical: 8,
   },
+
+  
 });
 
 

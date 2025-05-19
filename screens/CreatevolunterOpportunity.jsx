@@ -26,6 +26,22 @@ const CreatevolunterOpportunity = () => {
   const [maxParticipants, setMaxParticipants] = useState('');
   const [basePoints, setBasePoints] = useState('');
 const [filter, setFilter] = useState("add_job");
+const [startTime, setStartTime] = useState('');
+const [endTime, setEndTime] = useState('');
+const [volunteerDays, setVolunteerDays] = useState([]);
+const timeOptions = [
+  '08:00', '09:00', '10:00', '11:00', '12:00',
+  '13:00', '14:00', '15:00', '16:00', '17:00',
+];
+const dayOptions = [
+  { label: 'Sunday', value: 'sunday' },
+  { label: 'Monday', value: 'monday' },
+  { label: 'Tuesday', value: 'tuesday' },
+  { label: 'Wednesday', value: 'wednesday' },
+  { label: 'Thursday', value: 'thursday' },
+  { label: 'Friday', value: 'friday' },
+  { label: 'Saturday', value: 'saturday' },
+];
 
 
   const navigation = useNavigation();
@@ -75,6 +91,9 @@ const [filter, setFilter] = useState("add_job");
       skills: selectedSkills,
       max_participants: parseInt(maxParticipants),
       base_points: parseInt(basePoints),
+      start_time: startTime,
+     end_time: endTime,
+     volunteer_days: volunteerDays,
     };
 
     try {
@@ -168,6 +187,8 @@ const [filter, setFilter] = useState("add_job");
 
       {step === 3 && (
         <>
+       
+
           <TextInput
             style={styles.input}
             placeholder="Image URL"
@@ -180,7 +201,76 @@ const [filter, setFilter] = useState("add_job");
             value={applicationLink}
             onChangeText={setApplicationLink}
           />
+           <TextInput
+            style={styles.input}
+            placeholder="Max Participants"
+            value={maxParticipants}
+            onChangeText={setMaxParticipants}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Base Points"
+            value={basePoints}
+            onChangeText={setBasePoints}
+            keyboardType="numeric"
+          />
+ <Text style={styles.label}>Start Time</Text>
+<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+  {timeOptions.map((time) => (
+    <TouchableOpacity
+      key={time}
+      style={[
+        styles.skillButton,
+        startTime === time && styles.skillSelected,
+        { marginRight: 10 },
+      ]}
+      onPress={() => setStartTime(time)}
+    >
+      <Text style={styles.skillText}>{time}</Text>
+    </TouchableOpacity>
+  ))}
+</ScrollView>
 
+<Text style={styles.label}>End Time</Text>
+<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+  {timeOptions.map((time) => (
+    <TouchableOpacity
+      key={time}
+      style={[
+        styles.skillButton,
+        endTime === time && styles.skillSelected,
+        { marginRight: 10 },
+      ]}
+      onPress={() => setEndTime(time)}
+    >
+      <Text style={styles.skillText}>{time}</Text>
+    </TouchableOpacity>
+  ))}
+</ScrollView>
+
+<Text style={styles.label}>Volunteer Days</Text>
+<View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+  {dayOptions.map((day) => (
+    <TouchableOpacity
+      key={day.value}
+      style={[
+        styles.skillButton,
+        volunteerDays.includes(day.value) && styles.skillSelected,
+        { marginRight: 10, marginBottom: 10 },
+      ]}
+      onPress={() => {
+        if (volunteerDays.includes(day.value)) {
+          setVolunteerDays(volunteerDays.filter((d) => d !== day.value));
+        } else {
+          setVolunteerDays([...volunteerDays, day.value]);
+        }
+      }}
+    >
+      <Text style={styles.skillText}>{day.label}</Text>
+    </TouchableOpacity>
+  ))}
+</View>
           <Text style={styles.label}>Select Skills:</Text>
           {availableSkills.map((skill) => (
             <TouchableOpacity
@@ -198,20 +288,7 @@ const [filter, setFilter] = useState("add_job");
             </TouchableOpacity>
           ))}
 
-          <TextInput
-            style={styles.input}
-            placeholder="Max Participants"
-            value={maxParticipants}
-            onChangeText={setMaxParticipants}
-            keyboardType="numeric"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Base Points"
-            value={basePoints}
-            onChangeText={setBasePoints}
-            keyboardType="numeric"
-          />
+         
           <View style={styles.buttonsContainer}>
             <TouchableOpacity style={styles.button} onPress={() => setStep(2)}>
               <Text style={styles.buttonText}>Back</Text>

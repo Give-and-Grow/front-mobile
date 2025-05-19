@@ -15,6 +15,8 @@ import ipAdd from "../scripts/helpers/ipAddress";
 import ScreenLayout from '../screens/ScreenLayout';
 import BottomTabBar from './BottomTabBar';
 const VolunteerOpportunities = () => {
+   const [summaries, setSummaries] = useState({});
+    const [summaryLoading, setSummaryLoading] = useState({});
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [participationStatus, setParticipationStatus] = useState({});
@@ -68,7 +70,7 @@ const VolunteerOpportunities = () => {
     if (!token) return Alert.alert('Error', 'Please login first');
 
     try {
-      const response = await fetch(`${ipAdd}:5000/opportunity-participants/opportunities/${jobId}/join`, {
+      const response = await fetch(`${ipAdd}:5000/user-participation/${jobId}/join`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -103,7 +105,7 @@ const VolunteerOpportunities = () => {
     if (!token) return Alert.alert('Error', 'Please login first');
 
     try {
-      const response = await fetch(`${ipAdd}:5000/opportunity-participants/opportunities/${jobId}/withdraw`, {
+      const response = await fetch(`${ipAdd}:5000/user-participation/${jobId}/withdraw`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -124,7 +126,45 @@ const VolunteerOpportunities = () => {
       Alert.alert('Error', 'Something went wrong while withdrawing');
     }
   };
-
+  const fetchSummary = async (oppId) => {
+    if (summaries[oppId]) {
+      // التلخيص موجود، نرجعه فوراً
+      return summaries[oppId];
+    }
+  
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) {
+      alert('Please login first');
+      return;
+    }
+  
+    setSummaryLoading((prev) => ({ ...prev, [oppId]: true }));
+  
+    try {
+      const response = await fetch(`${ipAdd}:5000/opportunities/summary/${oppId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const data = await response.json();
+      console.log("Summary data for oppId", oppId, data);
+  
+      if (response.ok && data.summary) {
+        setSummaries((prev) => ({ ...prev, [oppId]: data.summary }));
+        return data.summary;  // ترجع التلخيص اللي جاك من السيرفر
+      } else {
+        alert(data.msg || 'Failed to fetch summary');
+        return null;
+      }
+    } catch (err) {
+      console.error("Error fetching summary:", err);
+      alert('An error occurred while fetching summary');
+      return null;
+    } finally {
+      setSummaryLoading((prev) => ({ ...prev, [oppId]: false }));
+    }
+  };
   const renderItem = ({ item }) => {
     const status = participationStatus[item.id];
 
@@ -190,6 +230,9 @@ const VolunteerOpportunities = () => {
         ListHeaderComponent={<Text style={styles.header}>Available Volunteer Opportunities</Text>}
         ListFooterComponent={<View style={{ height: 20 }} />}
       />
+      
+
+      
        <View>
     <BottomTabBar
   activeTab={activeTab}
