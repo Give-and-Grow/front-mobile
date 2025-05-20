@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, ScrollView, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { Chip } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { launchImageLibrary } from 'react-native-image-picker';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import BottomTabBar from './BottomTabBar';
 const CreatePost = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -28,7 +38,7 @@ const CreatePost = () => {
   };
 
   const handleRemoveTag = (tagToRemove) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleAddImageLink = () => {
@@ -47,7 +57,7 @@ const CreatePost = () => {
       return;
     }
 
-    const filteredTags = tags.filter(tag => tag.trim() !== '');
+    const filteredTags = tags.filter((tag) => tag.trim() !== '');
     if (filteredTags.length === 0) {
       Alert.alert('Error', 'Please add at least one tag.');
       return;
@@ -65,7 +75,7 @@ const CreatePost = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(postData),
       });
@@ -85,6 +95,7 @@ const CreatePost = () => {
       Alert.alert('Error', 'Failed to connect to server.');
     }
   };
+
   const handlePickImage = () => {
     launchImageLibrary(
       { mediaType: 'photo', selectionLimit: 1 },
@@ -94,113 +105,163 @@ const CreatePost = () => {
         } else if (response.errorCode) {
           console.log('ImagePicker Error: ', response.errorMessage);
         } else {
-          // نضيف رابط أو مسار الصورة المختارة
           const uri = response.assets[0].uri;
           setImageLinks([...imageLinks, uri]);
         }
       }
     );
   };
+ const handleProfilePress = () => {
+    navigation.navigate('CreatePost');
+  
+  };
+  const [activeTab, setActiveTab] = useState('postcreate');
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Create New Post</Text>
+    <View style={{ flex: 1, backgroundColor: '#e8f5e9' }}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 25, backgroundColor: '#e8f5e9' }}>
+      <Text style={styles.header}>
+        <MaterialIcons name="post-add" size={30} color="#2e7d32" /> Create New Post
+      </Text>
 
-      <Text style={styles.label}>Title:</Text>
-      <TextInput
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Enter post title"
-        style={styles.input}
-      />
-
-      <Text style={styles.label}>Content:</Text>
-      <TextInput
-        value={content}
-        onChangeText={setContent}
-        placeholder="Write your content"
-        multiline
-        style={[styles.input, styles.textarea]}
-      />
-
-      <Text style={styles.label}>Tags:</Text>
-      <View style={styles.tagInputContainer}>
+      {/* Title */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>
+          <MaterialIcons name="title" size={20} color="#1b5e20" /> Title
+        </Text>
         <TextInput
-          value={tagInput}
-          onChangeText={setTagInput}
-          placeholder="Add a tag"
-          placeholderTextColor="#7cb342"
-          style={styles.tagInput}
-          onSubmitEditing={handleAddTag}
-          returnKeyType="done"
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Enter post title"
+          placeholderTextColor="#a5d6a7"
+          style={styles.input}
         />
-        <TouchableOpacity style={styles.addButton} onPress={handleAddTag}>
-          <Text style={styles.addButtonText}>Add</Text>
+      </View>
+
+      {/* Content */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>
+          <MaterialIcons name="notes" size={20} color="#1b5e20" /> Content
+        </Text>
+        <TextInput
+          value={content}
+          onChangeText={setContent}
+          placeholder="Write your content"
+          multiline
+          placeholderTextColor="#a5d6a7"
+          style={[styles.input, styles.textarea]}
+        />
+      </View>
+
+      {/* Tags */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>
+          <MaterialIcons name="local-offer" size={20} color="#1b5e20" /> Tags
+        </Text>
+        <View style={styles.tagInputContainer}>
+          <TextInput
+            value={tagInput}
+            onChangeText={setTagInput}
+            placeholder="Add a tag"
+            placeholderTextColor="#7cb342"
+            style={styles.tagInput}
+            onSubmitEditing={handleAddTag}
+            returnKeyType="done"
+          />
+          <TouchableOpacity style={styles.addButton} onPress={handleAddTag}>
+            <MaterialIcons name="add-circle" size={28} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.tagContainer}>
+          {tags.map((tag, index) => (
+            <Chip
+              key={index}
+              onClose={() => handleRemoveTag(tag)}
+              style={styles.chip}
+              textStyle={styles.chipText}
+              closeIcon="close"
+            >
+              #{tag}
+            </Chip>
+          ))}
+        </View>
+      </View>
+
+      {/* Image Links */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>
+          <MaterialIcons name="image" size={20} color="#1b5e20" /> Image Links
+        </Text>
+        {imageLinks.map((link, index) => (
+          <TextInput
+            key={index}
+            value={link}
+            onChangeText={(value) => handleChangeImageLink(index, value)}
+            placeholder={`Image URL ${index + 1}`}
+            placeholderTextColor="#a5d6a7"
+            style={styles.input}
+          />
+        ))}
+
+        <TouchableOpacity style={styles.imageAddButton} onPress={handleAddImageLink}>
+          <MaterialIcons name="add-photo-alternate" size={24} color="#fff" />
+          <Text style={styles.imageAddButtonText}>Add Another Image</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.tagContainer}>
-        {tags.map((tag, index) => (
-          <Chip
-            key={index}
-            onClose={() => handleRemoveTag(tag)}
-            style={styles.chip}
-            textStyle={styles.chipText}
-            closeIcon="close"
-          >
-            #{tag}
-          </Chip>
-        ))}
-      </View>
-
-      <Text style={styles.label}>Image Links:</Text>
-      {imageLinks.map((link, index) => (
-        <TextInput
-          key={index}
-          value={link}
-          onChangeText={(value) => handleChangeImageLink(index, value)}
-          placeholder={`Image URL ${index + 1}`}
-          style={styles.input}
-        />
-      ))}
-      <TouchableOpacity style={styles.imageAddButton} onPress={handleAddImageLink}>
-        <Text style={styles.imageAddButtonText}>+ Add Another Image</Text>
-      </TouchableOpacity>
-
+     
+      {/* Submit */}
       <View style={styles.submitButtonContainer}>
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <MaterialIcons name="publish" size={26} color="white" />
           <Text style={styles.submitButtonText}>Publish Post</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
+    
+    <View>
+        <BottomTabBar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        handleProfilePress={handleProfilePress}
+      />
+       </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 25,
-    backgroundColor: '#e8f5e9', // أخضر فاتح ناعم
+    backgroundColor: '#e8f5e9',
     flexGrow: 1,
   },
   header: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#2e7d32', // أخضر داكن
-    marginBottom: 20,
+    color: '#2e7d32',
+    marginBottom: 30,
     textAlign: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputGroup: {
+    marginBottom: 1,
   },
   label: {
-    marginTop: 15,
-    fontWeight: '600',
-    fontSize: 17,
-    color: '#1b5e20', // أخضر غامق
+    fontWeight: '700',
+    fontSize: 18,
+    color: '#1b5e20',
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#a5d6a7', // أخضر فاتح متناسق
+    borderColor: '#a5d6a7',
     backgroundColor: '#ffffff',
     color: '#2e7d32',
     padding: 14,
-    marginBottom: 15,
     borderRadius: 15,
     fontSize: 16,
     shadowColor: '#81c784',
@@ -215,7 +276,6 @@ const styles = StyleSheet.create({
   tagInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
   },
   tagInput: {
     flex: 1,
@@ -228,10 +288,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 12,
   },
+  addButton: {
+    backgroundColor: '#388e3c',
+    borderRadius: 50,
+    padding: 6,
+    elevation: 4,
+  },
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginVertical: 10,
+    marginTop: 12,
   },
   chip: {
     backgroundColor: '#4caf50',
@@ -248,47 +314,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   imageAddButton: {
-    marginVertical: 15,
+    marginTop: 15,
     backgroundColor: '#66bb6a',
-    paddingVertical: 12,
-    borderRadius: 25,
+    flexDirection: 'row',
     alignItems: 'center',
-    elevation: 4,
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 30,
+    elevation: 5,
   },
   imageAddButtonText: {
     color: '#fff',
     fontWeight: '700',
     fontSize: 16,
+    marginLeft: 8,
   },
   submitButtonContainer: {
-    marginTop: 30,
-    borderRadius: 30,
+    //marginTop: 1, // أو 5 أو حتى 0 حسب رغبتك
+    borderRadius: 20,
     overflow: 'hidden',
     elevation: 6,
   },
+  
   submitButton: {
     backgroundColor: '#2e7d32',
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: 30,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   submitButtonText: {
     color: 'white',
     fontWeight: '700',
     fontSize: 18,
-  },
-  addButton: {
-    backgroundColor: '#388e3c',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    elevation: 4,
-  },
-  addButtonText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 16,
-    textAlign: 'center',
+    marginLeft: 10,
   },
 });
 
