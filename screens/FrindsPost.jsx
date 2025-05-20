@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, FlatList, StyleSheet, RefreshControl, TouchableOpacity , Image } from 'react-native';
 import { Card, Paragraph, Avatar, Text } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
@@ -210,12 +210,23 @@ function PostCard({ item }) {
           </View>
         }
         subtitle={
+        
+
           <View style={styles.subtitleContainer}>
-            <Text style={styles.subtitleText}>By user: {item.user_id}</Text>
+            {item.owner_info?.profile_picture || item.user?.profile_picture ? (
+              <Image
+                source={{ uri: item.owner_info?.profile_picture || item.user?.profile_picture }}
+                style={{ width: 30, height: 30, borderRadius: 15, marginRight: 8 }}
+              />
+            ) : null}
+            <Text style={styles.subtitleText}>
+              By: {item.owner_info?.name || item.user?.name || 'Unknown'}
+            </Text>
             <Text style={[styles.subtitleText, { marginLeft: 8 }]}>
               {formatDateTime(item.created_at)}
             </Text>
           </View>
+          
         }
         left={(props) => (
           <Avatar.Text
@@ -251,7 +262,16 @@ function PostCard({ item }) {
        {comments.map((comment, idx) => (
   <View key={idx} style={styles.commentItem}>
     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-      <Text style={styles.commentUser}>User {comment.user_id}:</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+  {comment.owner_info?.profile_picture && (
+    <Image
+      source={{ uri: comment.owner_info.profile_picture }}
+      style={{ width: 30, height: 30, borderRadius: 15, marginRight: 8 }}
+    />
+  )}
+  <Text style={styles.commentUser}>{comment.owner_info?.name || 'Unknown User'}:</Text>
+</View>
+
       <View style={{ flexDirection: 'row' }}>
         {comment.is_mine && (
           <>
