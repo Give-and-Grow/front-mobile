@@ -1,8 +1,8 @@
-// screens/EvaluationScreen.js
+// screens/AttendanceScreen.js
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, ActivityIndicator,
-  StyleSheet, Alert, Modal, TextInput, ScrollView, Image
+  StyleSheet, Alert, Modal, Pressable, ScrollView
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from '../scripts/helpers/ipAddress';
@@ -10,12 +10,12 @@ import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LayoutWithFilters from './LayoutWithFiltersOrg';
 import BottomTabBar from './BottomTabBar';
-const RateParticipantsScreen = () => {
-   const [activeTab, setActiveTab] = useState('Rate');
-         const [filter, setFilter] = useState("evaluate");         
-              const handleProfilePress = () => {
-                navigation.navigate('RateParticipantsScreen');
-              };
+const AttendanceScreen = () => {
+   const [activeTab, setActiveTab] = useState('attendce');
+           const [filter, setFilter] = useState("attendance");         
+                const handleProfilePress = () => {
+                  navigation.navigate('AttendanceScreen');
+                };
   const [token, setToken] = useState('');
   const [opportunities, setOpportunities] = useState([]);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
@@ -68,91 +68,80 @@ const RateParticipantsScreen = () => {
     }
   };
 
-  const fetchEvaluations = async () => {
+  const fetchParticipants = async () => {
     if (!selectedDate || !selectedOpportunity) return;
     setLoading(true);
     try {
-      const res = await fetch(`${ipAdd}:5000/evaluation/${selectedOpportunity.id}?date=${selectedDate}`, {
+      const res = await fetch(`${ipAdd}:5000/attendance/${selectedOpportunity.id}?date=${selectedDate}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      const withEvaluationFields = data.participants.map(p => ({
-        ...p,
-        score: p.score === -1 ? 0 : p.score,
-        notes: p.notes || ''
-      }));
-      setParticipants(withEvaluationFields);
+      setParticipants(data.participants || []);
       setModalVisible(true);
     } catch {
-      Alert.alert('Error', 'Failed to fetch evaluations');
+      Alert.alert('Error', 'Failed to fetch participants');
     }
     setLoading(false);
   };
 
-  const handleRatingChange = (id, score) => {
+  const toggleAttendance = (participant_id) => {
     setParticipants(prev =>
       prev.map(p =>
-        p.participant_id === id ? { ...p, score } : p
+        p.participant_id === participant_id
+          ? { ...p, status: p.status === 'present' ? 'absent' : 'present' }
+          : p
       )
     );
   };
 
-  const handleNoteChange = (id, notes) => {
-    setParticipants(prev =>
-      prev.map(p =>
-        p.participant_id === id ? { ...p, notes } : p
-      )
-    );
-  };
-
-  const saveEvaluations = async () => {
+  const saveAttendance = async () => {
     if (!selectedDate || !selectedOpportunity) return;
     setLoading(true);
   
-    const evaluationsPayload = participants.map(({ participant_id, score, notes }) => ({
-      participant_id,
-      score,
-      notes,
-      date: selectedDate
+    const attendanceData = participants.map(p => ({
+      participant_id: p.participant_id,
+      status: p.status,
+      date: selectedDate  // التاريخ ضروري حسب طلب السيرفر
     }));
   
-    console.log("Sending participants data:", evaluationsPayload);
+    console.log('Saving attendance data:', attendanceData);
   
     try {
-      const res = await fetch(`${ipAdd}:5000/evaluation/${selectedOpportunity.id}?date=${selectedDate}`, {
+      const res = await fetch(`${ipAdd}:5000/attendance/${selectedOpportunity.id}?date=${selectedDate}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(evaluationsPayload),
+        body: JSON.stringify(attendanceData),
       });
       const data = await res.json();
-  
-      console.log("Response status:", res.status);
-      console.log("Response data:", data);
-  
-      Alert.alert('Success', data.message || 'Evaluations saved');
+      console.log('Server response:', data);
+      Alert.alert('Success', data.message || 'Attendance saved');
       setModalVisible(false);
     } catch (error) {
-      console.error("Error saving evaluations:", error);
-      Alert.alert('Error', 'Failed to save evaluations');
+      console.error('Error saving attendance:', error);
+      Alert.alert('Error', 'Failed to save attendance');
     }
     setLoading(false);
   };
   
-  
+   
   const handleFilterSelect = (selectedFilter) => {
     setFilter(selectedFilter);
     // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
   };
-
+  
   return (
-    <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="evaluate">
+    <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="attendance">
     <View style={{flex: 1, backgroundColor: '#e8f5e9'}}>
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.container}>
-     
-      <Text style={styles.title}>🌟 Participant Evaluation</Text>
+    <ScrollView contentContainerStyle={styles.container}
+   
+      keyboardShouldPersistTaps="always"
+      style={{ flex: 1 }}
+    >
+      
+      <Text style={styles.title}>📋 Attendance Tracker</Text>
 
       <Text style={styles.label}><Icon name="briefcase-outline" size={18} /> Select Opportunity:</Text>
       <View style={styles.pickerWrapper}>
@@ -188,70 +177,63 @@ const RateParticipantsScreen = () => {
       )}
 
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#388e3c' }]}
-        onPress={fetchEvaluations}
+        style={[styles.button, { backgroundColor: '#43a047' }]}
+        onPress={fetchParticipants}
         disabled={!selectedDate || !selectedOpportunity}
       >
-        <Icon name="account-search-outline" size={20} color="#fff" />
+        <Icon name="account-group-outline" size={20} color="#fff" />
         <Text style={styles.buttonText}> Show Participants</Text>
       </TouchableOpacity>
 
-      <Modal animationType="slide" transparent={true} visible={modalVisible}>
+      {/* Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}><Icon name="star-check" size={22} /> Evaluate Participants</Text>
+            <Text style={styles.modalTitle}><Icon name="account-multiple-check" size={22} /> Participants</Text>
 
             {loading ? (
-              <ActivityIndicator size="large" color="#1e88e5" />
+              <ActivityIndicator size="large" color="#43a047" />
             ) : (
               <FlatList
                 data={participants}
                 keyExtractor={item => item.participant_id.toString()}
                 renderItem={({ item }) => (
-                  <View style={styles.participantCard}>
-                    <Image source={{ uri: item.profile_picture }} style={styles.avatar} />
-                    <View style={{ flex: 1, marginLeft: 10 }}>
-                      <Text style={styles.name}>{item.name}</Text>
-                    
-
-                      <TextInput
-                        style={styles.noteInput}
-                        placeholder="Write notes..."
-                        value={item.notes}
-                        onChangeText={text => handleNoteChange(item.participant_id, text)}
-                      />
-
-                      <View style={styles.starsRow}>
-                        {[1, 2, 3, 4, 5].map(i => (
-                          <TouchableOpacity key={i} onPress={() => handleRatingChange(item.participant_id, i)}>
-                            <Icon
-                              name={i <= item.score ? 'star' : 'star-outline'}
-                              size={24}
-                              color="#FFD700"
-                            />
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    </View>
-                  </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.participantCard,
+                      item.status === 'present' ? styles.present : styles.absent
+                    ]}
+                    onPress={() => toggleAttendance(item.participant_id)}
+                  >
+                    <Text style={styles.name}>{item.name}</Text>
+                    <Text style={styles.status}>
+                      {item.status === 'present' ? '✔️ Present' : '✘ Absent'}
+                    </Text>
+                  </TouchableOpacity>
                 )}
               />
             )}
 
-            <TouchableOpacity style={styles.button} onPress={saveEvaluations}>
-              <Icon name="content-save" size={20} color="#fff" />
-              <Text style={styles.buttonText}> Save Evaluations</Text>
+            <TouchableOpacity style={styles.button} onPress={saveAttendance}>
+              <Icon name="content-save-check-outline" size={20} color="#fff" />
+              <Text style={styles.buttonText}> Save Attendance</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.button, { backgroundColor: '#aaa' }]} onPress={() => setModalVisible(false)}>
+            <Pressable style={[styles.button, { backgroundColor: '#aaa' }]} onPress={() => setModalVisible(false)}>
               <Icon name="close" size={20} color="#fff" />
               <Text style={styles.buttonText}> Close</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </Modal>
-       <View style={{ height: 100 }} />
-    </ScrollView>
+      <View style={{ height: 100 }} />
+      </ScrollView>
+      
     <BottomTabBar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -262,16 +244,17 @@ const RateParticipantsScreen = () => {
     </LayoutWithFilters>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#e8f5e9',  // أخضر فاتح
+    backgroundColor: '#e8f5e9',
     flexGrow: 1
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#2e7d32',  // أخضر غامق
+    color: '#2e7d32',
     marginBottom: 20,
     textAlign: 'center'
   },
@@ -279,18 +262,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
     fontWeight: 'bold',
-    color: '#2e7d32'  // أخضر غامق
+    color: '#2e7d32'
   },
   pickerWrapper: {
     borderWidth: 1,
-    borderColor: '#a5d6a7',  // أخضر فاتح متوسط
+    borderColor: '#ccc',
     borderRadius: 10,
-    backgroundColor: '#ffffff',
+    overflow: 'hidden',
+    backgroundColor: '#fff',
     marginBottom: 15
   },
   button: {
     flexDirection: 'row',
-    backgroundColor: '#388e3c',  // أخضر متوسط
+    backgroundColor: '#4CAF50',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
@@ -306,7 +290,7 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'rgba(46,125,50,0.4)', // ظل أخضر شفاف بدلاً من الأسود
+    backgroundColor: 'rgba(0,0,0,0.4)',
     padding: 20,
   },
   modalContent: {
@@ -314,44 +298,29 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 20,
     maxHeight: '80%',
-    shadowColor: '#2e7d32',  // ظل أخضر غامق
+    shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 10
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2e7d32',  // أخضر غامق
+    color: '#2e7d32',
     marginBottom: 10,
     textAlign: 'center',
   },
   participantCard: {
-    flexDirection: 'row',
-    backgroundColor: '#c8e6c9',  // أخضر فاتح أكثر
     padding: 15,
-    borderRadius: 10,
     marginBottom: 10,
-    alignItems: 'center'
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25
-  },
-  name: { fontSize: 16, fontWeight: 'bold', color: '#1b5e20' }, // أخضر غامق جدا للنص
-  phone: { fontSize: 14, color: '#4caf50' },  // أخضر متوسط للنص الثانوي
-  noteInput: {
-    borderWidth: 1,
-    borderColor: '#81c784', // أخضر فاتح
-    borderRadius: 8,
-    padding: 8,
-    marginTop: 5,
-    backgroundColor: '#ffffff'
-  },
-  starsRow: {
+    borderRadius: 10,
     flexDirection: 'row',
-    marginTop: 5
-  }
+    justifyContent: 'space-between',
+    elevation: 2
+  },
+  present: { backgroundColor: '#c8e6c9' },
+  absent: { backgroundColor: '#ffcdd2' },
+  name: { fontSize: 16, fontWeight: 'bold' },
+  status: { fontSize: 16 },
 });
 
-export default RateParticipantsScreen;
+export default AttendanceScreen;

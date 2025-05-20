@@ -38,6 +38,18 @@ const OrganizationFilters = ({ initialFilter = null, onFilterSelect }) => {
       screen: 'ManageTagsScreenOrg',
       icon: 'tag-multiple',
     },
+    {
+      label: 'Manage Participants',
+      value: 'manage_participants',
+      screen: 'OrganizationRejectAcceptUser',  // ← اسم الشاشة اللي بتعرض القبول/الرفض
+      icon: 'account-multiple-check', // ← أيقونة مناسبة للإدارة الجماعية
+    },
+    {
+      label: 'Attendance',
+      value: 'attendance',
+      screen: 'AttendanceScreen',  // اسم الشاشة اللي عملناها لتسجيل الحضور والغياب
+      icon: 'calendar-check',      // أيقونة مناسبة للحضور
+    }
   ];
 
   const handleSelect = (value, screen) => {

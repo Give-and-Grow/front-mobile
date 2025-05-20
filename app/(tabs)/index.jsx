@@ -57,8 +57,8 @@ import LayoutWithFiltersAdmin from 'C:/Users/user/Videos/SOFT/front-mobile/scree
 import FilterComponent from 'C:/Users/user/Videos/SOFT/front-mobile/screens/FilterComponent.jsx';
 import ApplicationsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ApplicationsScreen.jsx';
 import EvaluateScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/EvaluateScreen.jsx';
-
-
+import OrganizationRejectAcceptUser from 'C:/Users/user/Videos/SOFT/front-mobile/screens/OrganizationRejectAcceptUser.jsx';
+import AttendanceScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AttendanceScreen.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -116,6 +116,8 @@ const Index = () => {
         <Stack.Screen name="FilterComponent" component={FilterComponent} />
         <Stack.Screen name="EvaluateScreen" component={EvaluateScreen} />
         <Stack.Screen name="ApplicationsScreen" component={ApplicationsScreen} /> 
+        <Stack.Screen name="OrganizationRejectAcceptUser" component={OrganizationRejectAcceptUser} /> 
+        <Stack.Screen name="AttendanceScreen" component={AttendanceScreen} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );
