@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+//import * as FileSystem from 'expo-file-system';
 import {
   View,
   Text,
@@ -6,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
@@ -14,23 +16,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ipAdd from '../scripts/helpers/ipAddress';
 import ScreenLayout from '../screens/ScreenLayout';
 import BottomTabBar from './BottomTabBar';
+
 const ApplicationsScreen = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState('');
+  const [activeTab, setActiveTab] = useState('application');
   const navigation = useNavigation();
-const [activeTab, setActiveTab] = useState('application');
+
   useEffect(() => {
-    // Load token then fetch applications
     const loadTokenAndFetch = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('userToken');
+        console.log('✅ Retrieved token:', storedToken);
         setToken(storedToken);
         if (storedToken) {
           await fetchApplications(storedToken);
         }
       } catch (err) {
-        console.error('Error retrieving token:', err);
+        console.error('❌ Error retrieving token:', err);
         setLoading(false);
       }
     };
@@ -40,72 +44,125 @@ const [activeTab, setActiveTab] = useState('application');
 
   const fetchApplications = async (authToken) => {
     try {
+      console.log('📡 Fetching applications with token:', authToken);
       const res = await axios.get(`${ipAdd}:5000/user-participation/applications`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
+      console.log('✅ Applications fetched:', JSON.stringify(res.data, null, 2));
       setApplications(res.data);
     } catch (err) {
-      console.error('Error fetching applications:', err);
+      console.error('❌ Error fetching applications:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Icon name="briefcase-outline" size={24} color="#2e7d32" />
-        <Text style={styles.title}>{item.opportunity.title}</Text>
-      </View>
-      <Text style={styles.description}>{item.opportunity.description}</Text>
-      <Text style={styles.date}>
-        From {item.opportunity.start_date} to {item.opportunity.end_date}
-      </Text>
-      <Text style={styles.status}>Status: {item.status}</Text>
+  const renderItem = ({ item }) => {
+    console.log('🧾 Rendering application item:', item);
 
-      {item.can_evaluate && (
-        <TouchableOpacity
-          style={styles.evaluateButton}
-          onPress={() => navigation.navigate('EvaluateScreen', { participantId: item.id })}
-        >
-          <Text style={styles.evaluateText}>Evaluate Opportunity</Text>
-          <Icon name="star-check" size={20} color="#fff" />
-        </TouchableOpacity>
-      )}
-    </View>
+    const today = new Date();
+    const endDate = new Date(item.opportunity.end_date);
+    const showCertificateButton = item.certificate && endDate < today;
+
+
+    console.log('📅 Dates - Today:', today, '| End Date:', endDate);
+    console.log('🎯 Conditions -item.certificate  :', item.certificate , '| showCertificateButton:', showCertificateButton);
+
+    const downloadCertificate = (applicationId, token) => {
+  Alert.alert(
+    "Confirm Download",
+    "Do you want to download the certificate?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      {
+        text: "OK",
+        onPress: async () => {
+          try {
+            await axios.get(
+              `http://127.0.0.1:5000/certificates/download-certificate/${applicationId}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            Alert.alert("Success", "The certificate has been sent to your email.");
+          } catch (error) {
+            console.error(error);
+            Alert.alert("Error", "An error occurred while sending the certificate.");
+          }
+        }
+      }
+    ],
+    { cancelable: false }
   );
+};
+    
+    return (
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Icon name="briefcase-outline" size={24} color="#2e7d32" />
+          <Text style={styles.title}>{item.opportunity.title}</Text>
+        </View>
+        <Text style={styles.description}>{item.opportunity.description}</Text>
+        <Text style={styles.date}>
+          From {item.opportunity.start_date} to {item.opportunity.end_date}
+        </Text>
+        <Text style={styles.status}>Status: {item.status}</Text>
+
+        {item.can_evaluate && (
+          <TouchableOpacity
+            style={styles.evaluateButton}
+            onPress={() =>
+              navigation.navigate('EvaluateScreen', { participantId: item.id })
+            }
+          >
+            <Text style={styles.evaluateText}>Evaluate Opportunity</Text>
+            <Icon name="star-check" size={20} color="#fff" />
+          </TouchableOpacity>
+        )}
+
+       {showCertificateButton && (
+          <TouchableOpacity
+            style={[styles.evaluateButton, { backgroundColor: '#388e3c', marginTop: 10 }]}
+            onPress={downloadCertificate}
+          >
+            <Text style={styles.evaluateText}>Download Certificate</Text>
+            <Icon name="download" size={20} color="#fff" />
+          </TouchableOpacity>
+       )}
+      </View>
+    );
+  };
+
   const handleProfilePress = () => {
     navigation.navigate('ApplicationsScreen');
-  
   };
+
   const handleFilterSelect = (selectedFilter) => {
-    setFilter(selectedFilter);
-    // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
+    console.log('🔍 Filter selected:', selectedFilter);
   };
+
   return (
     <ScreenLayout onFilterSelect={handleFilterSelect} initialFilter="Eval">
-    <View style={styles.container}>
-      <Text style={styles.screenTitle}>My Applications</Text>
-      {loading ? (
-        <ActivityIndicator size="large" color="#2e7d32" />
-      ) : (
-        <FlatList
-          data={applications}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        />
-      )}
-    </View>
-    <View>
-    <BottomTabBar
-  activeTab={activeTab}
-  setActiveTab={setActiveTab}
-  handleProfilePress={handleProfilePress}
-/>
-</View>
+      <View style={styles.container}>
+        <Text style={styles.screenTitle}>My Applications</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#2e7d32" />
+        ) : (
+          <FlatList
+            data={applications}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+        )}
+      </View>
+      <BottomTabBar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        handleProfilePress={handleProfilePress}
+      />
     </ScreenLayout>
-    
   );
 };
 

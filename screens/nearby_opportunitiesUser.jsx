@@ -233,6 +233,11 @@ const NearbyOpportunitiesUser = () => {
     setFilter(selectedFilter);
     // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
   };
+
+  const openLocationInMaps = (location) => {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+      Linking.openURL(url).catch((err) => console.error('فشل في فتح الخريطة:', err));
+    };
   return (
  
     <ScreenLayout onFilterSelect={handleFilterSelect} initialFilter="Nearby">
@@ -263,7 +268,13 @@ const NearbyOpportunitiesUser = () => {
   From {opp.start_time} to {opp.end_time}
 </Text>
             <View style={styles.badgeContainer}>
-              <Text style={styles.badge}>📍 {opp.location}</Text>
+              <Text style={styles.badge}>📍 {opp.location}
+             
+              </Text>
+               <TouchableOpacity onPress={() => openLocationInMaps(opp.location)}>
+              <Text style={styles.badge}>View location</Text>
+            </TouchableOpacity>
+
               <Text style={styles.badge}>🕒 {opp.opportunity_type}</Text>
               <Text style={styles.badge}>📏 {opp.distance_km} km</Text>
             </View>
@@ -461,6 +472,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+    fontSize: 14,
+  },
+   mapLink: {
+    color: '#388e3c',
+    textDecorationLine: 'underline',
     fontSize: 14,
   },
 });
