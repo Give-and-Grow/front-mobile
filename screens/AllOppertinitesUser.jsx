@@ -316,7 +316,10 @@ const [summaryLoading, setSummaryLoading] = useState({});
     setFilter(selectedFilter);
     // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
   };
-  
+   const openLocationInMaps = (location) => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+    Linking.openURL(url).catch((err) => console.error('  error :', err));
+  };
   return (
    
     <ScreenLayout onFilterSelect={handleFilterSelect} initialFilter="All">
@@ -404,7 +407,11 @@ const [summaryLoading, setSummaryLoading] = useState({});
  
             {/* Badges */}
             <View style={styles.badgeContainer}>
-              <Text style={styles.badge}>📍 {opp.location}</Text>
+              <Text style={styles.badge}>📍 {opp.location}
+              </Text>
+              <TouchableOpacity onPress={() => openLocationInMaps(opp.location)}>
+              <Text style={styles.badge}>View location</Text>
+            </TouchableOpacity>
               <Text style={styles.badge}>🕒 {opp.opportunity_type}</Text>
             </View>
 
@@ -684,6 +691,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  mapLink: {
+    color: '#388e3c',
+    textDecorationLine: 'underline',
+    fontSize: 14,
   },
 });
 

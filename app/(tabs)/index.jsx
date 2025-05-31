@@ -59,6 +59,7 @@ import ApplicationsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/A
 import EvaluateScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/EvaluateScreen.jsx';
 import OrganizationRejectAcceptUser from 'C:/Users/user/Videos/SOFT/front-mobile/screens/OrganizationRejectAcceptUser.jsx';
 import AttendanceScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AttendanceScreen.jsx';
+import CertificateScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CertificateScreen.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -118,6 +119,7 @@ const Index = () => {
         <Stack.Screen name="ApplicationsScreen" component={ApplicationsScreen} /> 
         <Stack.Screen name="OrganizationRejectAcceptUser" component={OrganizationRejectAcceptUser} /> 
         <Stack.Screen name="AttendanceScreen" component={AttendanceScreen} /> 
+        <Stack.Screen name="CertificateScreen" component={CertificateScreen} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );

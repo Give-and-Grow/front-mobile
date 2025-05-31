@@ -32,12 +32,7 @@ const OrganizationFilters = ({ initialFilter = null, onFilterSelect }) => {
       screen: 'OpportunityList',
       icon: 'format-list-bulleted',
     },
-    {
-      label: 'Manage Tags',
-      value: 'tags',
-      screen: 'ManageTagsScreenOrg',
-      icon: 'tag-multiple',
-    },
+  
     {
       label: 'Manage Participants',
       value: 'manage_participants',
