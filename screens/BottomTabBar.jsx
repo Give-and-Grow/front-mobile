@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -21,29 +22,38 @@ const BottomTabBar = ({ activeTab, setActiveTab }) => {
 
     getUserRole();
   }, []);
-  // 🟩 Tabs for each user type
+
   const userTabs = [
-    { name: 'Home', icon: 'home', screen: 'homepage' },
-    { name: 'Search', icon: 'search', screen: 'Search' },
-    { name: 'FriendsPosts', icon: 'users', screen: 'FrindsPost' },
-    { name: 'Opportunities', icon: 'lightbulb-o', screen: 'AllOppertinitesUser' },
-    { name: 'Profile', icon: 'user', screen: 'FollowingScreen' },
+    { name: 'Home', icon: 'home', library: 'FontAwesome', screen: 'homepage' },
+    { name: 'Chat', icon: 'chatbubble-outline', library: 'Ionicons', screen: 'ChatList' },
+   { name: 'Notification', icon: 'notifications-outline', library: 'Ionicons', screen: 'Notification' },
+ { name: 'HonorBoard', icon: 'medal-outline', library: 'Ionicons', screen: 'HonorBoard' },
+
+
+    { name: 'Posts', icon: 'users', library: 'FontAwesome', screen: 'FrindsPost' },
+    { name: 'Opportunities', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'AllOppertinitesUser' },
+    
   ];
 
   const organizationTabs = [
-    { name: 'Home', icon: 'home', screen: 'homepage' },
-    { name: 'Search', icon: 'search', screen: 'Search' },
-    { name: 'Posts', icon: 'users', screen: 'FrindsPost' },
-    { name: 'ManageOpportunities', icon: 'lightbulb-o', screen: 'CreatevolunterOpportunity' },
-    { name: 'Profile', icon: 'user', screen: 'FollowScreenOrganization' },
+    { name: 'Home', icon: 'home', library: 'FontAwesome', screen: 'homepage' },
+   { name: 'Chat', icon: 'chatbubble-outline', library: 'Ionicons', screen: 'ChatList' },
+ { name: 'notification', icon: 'notifications-outline', library: 'Ionicons', screen: 'Notification' },
+{ name: 'HonorBoard', icon: 'medal-outline', library: 'Ionicons', screen: 'HonorBoard' },
+
+    { name: 'Posts', icon: 'users', library: 'FontAwesome', screen: 'FrindsPost' },
+    { name: 'Opportunities', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'CreatevolunterOpportunity' },
+   
   ];
 
   const adminTabs = [
-    { name: 'Home', icon: 'home', screen: 'homepage' },
-    { name: 'ManageOpportunities', icon: 'lightbulb-o', screen: 'AdminDashboardScreen' },
-    { name: 'Users', icon: 'users', screen: 'ManageUsers' },
-    { name: 'Reports', icon: 'lightbulb-o', screen: 'ReportsScreen' },
-    { name: 'Profile', icon: 'user', screen: 'AdminProfile' },
+    { name: 'Home', icon: 'home', library: 'FontAwesome', screen: 'homepage' },
+    { name: 'Opportunities', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'AdminDashboardScreen' },
+    { name: 'Users', icon: 'users', library: 'FontAwesome', screen: 'ManageUsers' },
+    { name: 'Reports', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'ReportsScreen' },
+  { name: 'HonorBoard', icon: 'medal-outline', library: 'Ionicons', screen: 'HonorBoard' },
+
+
   ];
 
   let tabsToRender = [];
@@ -57,6 +67,19 @@ const BottomTabBar = ({ activeTab, setActiveTab }) => {
     setActiveTab(tab.name);
   };
 
+  const renderIcon = (tab) => {
+    const color = activeTab === tab.name ? '#388e3c' : '#999';
+    const size = 25;
+
+    switch (tab.library) {
+      case 'Ionicons':
+        return <Ionicons name={tab.icon} size={size} color={color} />;
+      case 'FontAwesome':
+      default:
+        return <FontAwesome name={tab.icon} size={size} color={color} />;
+    }
+  };
+
   return (
     <View style={styles.bottomTab}>
       {tabsToRender.map((tab) => (
@@ -65,11 +88,7 @@ const BottomTabBar = ({ activeTab, setActiveTab }) => {
           style={styles.tabButton}
           onPress={() => handleTabPress(tab)}
         >
-          <Icon
-            name={tab.icon}
-            size={25}
-            color={activeTab === tab.name ? '#388e3c' : '#999'}
-          />
+          {renderIcon(tab)}
           <Text
             style={[
               styles.tabText,
