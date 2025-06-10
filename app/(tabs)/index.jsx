@@ -60,6 +60,11 @@ import EvaluateScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/Evalu
 import OrganizationRejectAcceptUser from 'C:/Users/user/Videos/SOFT/front-mobile/screens/OrganizationRejectAcceptUser.jsx';
 import AttendanceScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AttendanceScreen.jsx';
 import CertificateScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/CertificateScreen.jsx';
+import Notification from 'C:/Users/user/Videos/SOFT/front-mobile/screens/Notification.jsx';
+import ChatList from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChatList.jsx';
+import ChatBox from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChatBox.jsx';
+import ChatScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChatScreen.jsx';
+import HonorBoard from 'C:/Users/user/Videos/SOFT/front-mobile/screens/HonorBoard.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -120,6 +125,10 @@ const Index = () => {
         <Stack.Screen name="OrganizationRejectAcceptUser" component={OrganizationRejectAcceptUser} /> 
         <Stack.Screen name="AttendanceScreen" component={AttendanceScreen} /> 
         <Stack.Screen name="CertificateScreen" component={CertificateScreen} /> 
+           <Stack.Screen name="Notification" component={Notification} /> 
+             <Stack.Screen name="ChatList" component={ChatList} /> 
+               <Stack.Screen name="ChatBox" component={ChatBox} /> 
+                <Stack.Screen name="HonorBoard" component={HonorBoard} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );
