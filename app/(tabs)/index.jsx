@@ -65,6 +65,8 @@ import ChatList from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChatList.js
 import ChatBox from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChatBox.jsx';
 import ChatScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChatScreen.jsx';
 import HonorBoard from 'C:/Users/user/Videos/SOFT/front-mobile/screens/HonorBoard.jsx';
+import DashbordData from 'C:/Users/user/Videos/SOFT/front-mobile/screens/DashbordData.jsx';
+import AccountsDashboard from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AccountsDashboard.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -73,6 +75,7 @@ const Index = () => {
 
 
   return (
+     
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator initialRouteName="welcome">
         <Stack.Screen name="welcome" component={WelcomeScreen} />
@@ -129,6 +132,8 @@ const Index = () => {
              <Stack.Screen name="ChatList" component={ChatList} /> 
                <Stack.Screen name="ChatBox" component={ChatBox} /> 
                 <Stack.Screen name="HonorBoard" component={HonorBoard} /> 
+                <Stack.Screen name="DashbordData" component={DashbordData} /> 
+                 <Stack.Screen name="AccountsDashboard" component={AccountsDashboard} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );

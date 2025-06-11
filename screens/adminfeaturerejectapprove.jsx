@@ -1,253 +1,335 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, Image } from 'react-native';
-
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ipAdd from "../scripts/helpers/ipAddress";
+import axios from 'axios';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import LayoutWithFiltersAdmin from './LayoutWithFiltersAdmin';
+import ipAdd from "../scripts/helpers/ipAddress";
 import BottomTabBar from './BottomTabBar';
-const BASE_URL = `${ipAdd}:5000`;  // Replace with your backend URL
 
-const adminfeaturerejectapprove = () => {
-   const [activeTab, setActiveTab] = useState('rejectaprrove');
-          
-        const handleProfilePress = () => {
-          navigation.navigate('adminfeaturerejectapprove');
-        };
-  const [organizations, setOrganizations] = useState([]);
-  const [token, setToken] = useState(null);
- const [filter, setFilter] = useState("approve_reject");
-  // Get token from AsyncStorage
-  const getToken = async () => {
+const API_BASE = `${ipAdd}:5000`;
+
+export default function AdminFeatureRejectApprove({ navigation }) {
+  const [users, setUsers] = useState([]);
+  const [orgs, setOrgs] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('rerejectapprove');
+
+  const fetchData = async () => {
+    setLoading(true);
+    const token = await AsyncStorage.getItem('token');
     try {
-      const storedToken = await AsyncStorage.getItem('userToken');
-      setToken(storedToken);
-      return storedToken || null;
-    } catch (e) {
-      console.error('Failed to retrieve token', e);
-      return null;
+      const [userRes, orgRes] = await Promise.all([
+        axios.get(`${API_BASE}/admin/users/identity`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_BASE}/admin/organizations/proof`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      setUsers(userRes.data);
+      setOrgs(orgRes.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    setLoading(false);
+  };
+
+  const updateStatus = async (id, type, status) => {
+    const token = await AsyncStorage.getItem('token');
+    const url =
+      type === 'user'
+        ? `${API_BASE}/admin/users/identity/${id}/verification`
+        : `${API_BASE}/admin/organizations/proof/${id}/status`;
+
+    try {
+      await axios.put(
+        url,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchData();
+    } catch (error) {
+      console.error('Error updating status:', error.response?.data || error);
     }
   };
 
-  // Fetch pending organizations from the backend
-  const fetchPendingOrganizations = async () => {
-    try {
-      const token = await getToken();
-      const response = await fetch(`${ipAdd}:5000/admin/organizations/pending`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setOrganizations(data);
-      } else {
-        console.error('Error fetching pending organizations:', data);
-      }
-    } catch (error) {
-      console.error('Error:', error);
+  const statusStyle = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'approved':
+        return styles.statusApproved;
+      case 'rejected':
+        return styles.statusRejected;
+      case 'pending':
+        return styles.statusPending;
+      default:
+        return styles.statusDefault;
     }
   };
 
-  // Approve organization
-  const approveOrganization = async (orgId) => {
-    try {
-      const token = await getToken();
-      const response = await fetch(`${ipAdd}:5000/admin/organizations/${orgId}/approve`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      const text = await response.text();
-      console.log('Response status:', response.status);
-      console.log('Response body:', text);
-  
-      if (response.ok) {
-        alert(`Organization ${orgId} approved.`);
-        fetchPendingOrganizations();  // Re-fetch the pending list
-      } else {
-        console.error('Error approving organization:', text);
-        alert(`Error approving organization: ${text}`);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  // Reject organization
-  const rejectOrganization = async (orgId) => {
-    try {
-      const token = await getToken();
-      const response = await fetch(`${ipAdd}:5000/admin/organizations/${orgId}/reject`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      if (response.ok) {
-        alert(`Organization ${orgId} rejected.`);
-        fetchPendingOrganizations();  // Re-fetch the pending list
-      } else {
-        console.error('Error rejecting organization:', data);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
+  const handleProfilePress = () => {
+    navigation.navigate('adminfeaturerejectapprove');
   };
 
   useEffect(() => {
-    fetchPendingOrganizations();  // Fetch pending organizations on load
+    fetchData();
   }, []);
-  const handleFilterSelect = (selectedFilter) => {
+ const handleFilterSelect = (selectedFilter) => {
     setFilter(selectedFilter);
     // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
   };
   return (
-    <LayoutWithFiltersAdmin onFilterSelect={handleFilterSelect} initialFilter="approve_reject">
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <View style={{ flex: 1 }}>
+        <LayoutWithFiltersAdmin onFilterSelect={handleFilterSelect} initialFilter="approve_reject">
       <View style={styles.container}>
-        <Text style={styles.title}>Admin Organization Management</Text>
-        {organizations.length > 0 ? (
-          organizations.map((org) => (
-            <View key={org.id} style={styles.card}>
-              {/* Header with name and date */}
-              <View style={styles.cardHeader}>
-                <Text style={styles.name}>{org.name}</Text>
-                <Text style={styles.date}>{new Date(org.created_at).toLocaleDateString()}</Text>
-              </View>
-          
-              {/* Address, Phone and Industries with icons */}
-              <View style={styles.infoContainer}>
-                <Text style={styles.infoText}>📍 <Text style={styles.label}>Address:</Text> {org.address}</Text>
-                <Text style={styles.infoText}>📞 <Text style={styles.label}>Phone:</Text> {org.phone}</Text>
-                <Text style={styles.infoText}>🛠️ <Text style={styles.label}>Industries:</Text> {org.industries.map(ind => ind.name).join(', ')}</Text>
-              </View>
-          
-              {/* Description */}
-              <ScrollView style={styles.descriptionContainer}>
-                <Text style={styles.description}>📝 <Text style={styles.label}>Description:</Text> {org.description}</Text>
-              </ScrollView>
+        {/* Filters */}
+        <View style={styles.filterWrapper}>
+          {['all', 'users', 'orgs'].map((f) => (
+            <TouchableOpacity
+              key={f}
+              style={[styles.filterOption, filter === f && styles.filterOptionActive]}
+              onPress={() => setFilter(f)}
+            >
+              <Text style={[styles.filterOptionText, filter === f && styles.filterOptionTextActive]}>
+                {f === 'all' ? 'All' : f === 'users' ? 'Users' : 'Organizations'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-              {/* Approve/Reject Buttons */}
-              <View style={styles.buttonContainer}>
-                <Button
-                  title="✔️"
-                  onPress={() => approveOrganization(org.id)}
-                  color="#4CAF50"
-                />
-                <Button
-                  title="❌"
-                  onPress={() => rejectOrganization(org.id)}
-                  color="#F44336"
-                />
-              </View>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noOrganizations}>No pending organizations.</Text>
-        )}
+        {loading && <ActivityIndicator size="large" color="#16a34a" style={{ marginTop: 20 }} />}
+
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Users Section */}
+          {(filter === 'all' || filter === 'users') && (
+            <>
+              <Text style={styles.sectionTitle}>User Identity Verification</Text>
+              {users.length === 0 ? (
+                <Text style={styles.noData}>No users data available.</Text>
+              ) : (
+                users.map((user) => (
+                  <View key={user.id} style={styles.card}>
+                    <Text style={styles.cardTitle}>{user.full_name}</Text>
+                    <Text style={styles.cardText}>City: {user.city || 'Not specified'}</Text>
+                    <Text style={styles.cardText}>Gender: {user.gender}</Text>
+                    <Text style={styles.cardText}>
+                      Status:{' '}
+                      <Text style={[styles.status, statusStyle(user.verification_status)]}>
+                        {user.verification_status}
+                      </Text>
+                    </Text>
+                   {user.identity_picture ? (
+  <Image
+    source={{ uri: user.identity_picture }}
+    style={styles.idImage}
+    resizeMode="contain"
+  />
+) : (
+  <Text style={styles.noImage}>No ID image</Text>
+)}
+
+                    <View style={styles.btnGroup}>
+                      <TouchableOpacity
+                        style={[styles.btn, styles.approveBtn]}
+                        onPress={() => updateStatus(user.id, 'user', 'approved')}
+                      >
+                        <Icon name="check-circle" size={18} color="#fff" style={{ marginRight: 6 }} />
+                        <Text style={styles.btnText}>Approve</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.btn, styles.rejectBtn]}
+                        onPress={() => updateStatus(user.id, 'user', 'rejected')}
+                      >
+                        <Icon name="times-circle" size={18} color="#fff" style={{ marginRight: 6 }} />
+                        <Text style={styles.btnText}>Reject</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))
+              )}
+            </>
+          )}
+
+          {/* Orgs Section */}
+          {(filter === 'all' || filter === 'orgs') && (
+            <>
+              <Text style={styles.sectionTitle}>Organization Proof Verification</Text>
+              {orgs.length === 0 ? (
+                <Text style={styles.noData}>No organizations data available.</Text>
+              ) : (
+                orgs.map((org) => (
+                  <View key={org.id} style={styles.card}>
+                    <Text style={styles.cardTitle}>{org.name}</Text>
+                    <Text style={styles.cardText}>Address: {org.address}</Text>
+                    <Text style={styles.cardText}>Phone: {org.phone}</Text>
+                    <Text style={styles.cardText}>
+                      Status:{' '}
+                      <Text style={[styles.status, statusStyle(org.verification_status)]}>
+                        {org.verification_status}
+                      </Text>
+                    </Text>
+                    {org.proof_image ? (
+                      <Image
+                        source={{ uri: org.proof_image }}
+                        style={styles.idImage}
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <Text style={styles.noImage}>No proof image</Text>
+                    )}
+                    <View style={styles.btnGroup}>
+                      <TouchableOpacity
+                        style={[styles.btn, styles.approveBtn]}
+                        onPress={() => updateStatus(org.id, 'org', 'approved')}
+                      >
+                        <Icon name="check-circle" size={18} color="#fff" style={{ marginRight: 6 }} />
+                        <Text style={styles.btnText}>Approve</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.btn, styles.rejectBtn]}
+                        onPress={() => updateStatus(org.id, 'org', 'rejected')}
+                      >
+                        <Icon name="times-circle" size={18} color="#fff" style={{ marginRight: 6 }} />
+                        <Text style={styles.btnText}>Reject</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))
+              )}
+            </>
+          )}
+        </ScrollView>
       </View>
-    </ScrollView>
-    <BottomTabBar
-  activeTab={activeTab}
-  setActiveTab={setActiveTab}
-  handleProfilePress={handleProfilePress}
-/>
-    </LayoutWithFiltersAdmin>
+
+      <BottomTabBar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        handleProfilePress={handleProfilePress}
+      />
+      </LayoutWithFiltersAdmin>
+    </View>
+      
   );
-};
+}
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-    paddingVertical: 20,
-    backgroundColor: '#F0F4F8', // Calm background color
-  },
   container: {
-    paddingHorizontal: 20,
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f9fafb',
   },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#2E7D32',
+  filterWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginBottom: 20,
-    alignSelf: 'center',
   },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#388E3C',
-    marginBottom: 8,
+  filterOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#16a34a',
+    marginHorizontal: 6,
   },
-  text: {
-    fontSize: 16,
-    color: '#444',
-    marginBottom: 4,
+  filterOptionActive: {
+    backgroundColor: '#16a34a',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 15,
+  filterOptionText: {
+    color: '#16a34a',
+    fontWeight: '600',
+  },
+  filterOptionTextActive: {
+    color: '#fff',
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#065f46',
     marginBottom: 10,
-  },
-  noOrganizations: {
-    fontSize: 18,
     textAlign: 'center',
-    color: '#888',
-    marginVertical: 30,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  date: {
-    fontSize: 14,
-    color: '#888',
-  },
-  infoContainer: {
-    marginVertical: 8,
-  },
-  infoText: {
+  noData: {
+    textAlign: 'center',
     fontSize: 16,
-    color: '#555',
-    marginBottom: 6,
-  },
-  label: {
-    fontWeight: 'bold',
-    color: '#388E3C',
-  },
-  description: {
-    fontSize: 14,
-    color: '#444',
-    marginBottom: 15,
-    lineHeight: 20,
-  },
-  descriptionContainer: {
-    maxHeight: 100,
-    marginBottom: 15,
+    color: '#6b7280',
+    marginVertical: 12,
   },
   card: {
-    backgroundColor: '#E8F5E9', // Light green background for card
-    borderRadius: 12,
+    backgroundColor: '#ecfdf5',
+    borderRadius: 16,
     padding: 20,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowColor: '#059669',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#065f46',
+    marginBottom: 6,
+  },
+  cardText: {
+    fontSize: 15,
+    color: '#065f46',
+    marginBottom: 4,
+  },
+  status: {
+    fontWeight: '700',
+  },
+  statusApproved: {
+    color: '#16a34a',
+  },
+  statusRejected: {
+    color: '#dc2626',
+  },
+  statusPending: {
+    color: '#d97706',
+  },
+  statusDefault: {
+    color: '#374151',
+  },
+  idImage: {
+    width: '100%',
+    height: 180,
+    marginVertical: 12,
+    borderRadius: 12,
+  },
+  noImage: {
+    fontStyle: 'italic',
+    color: '#6b7280',
+    marginVertical: 12,
+  },
+  btnGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  btn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  approveBtn: {
+    backgroundColor: '#16a34a',
+  },
+  rejectBtn: {
+    backgroundColor: '#dc2626',
+  },
+  btnText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
 });
-
-export default adminfeaturerejectapprove;

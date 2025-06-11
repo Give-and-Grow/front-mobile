@@ -1,167 +1,316 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Image,
-  ScrollView,
-  TouchableOpacity,
   StyleSheet,
-} from "react-native";
-import axios from "axios";
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
+import DropDownPicker from 'react-native-dropdown-picker';
 import ipAdd from "../scripts/helpers/ipAddress";
 
+
 const HonorBoard = () => {
-  const [honors, setHonors] = useState([]);
-  const [period, setPeriod] = useState("all");
+  const [period, setPeriod] = useState('all');
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
+
+  const [volunteers, setVolunteers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // DropDown states
+  const [openPeriod, setOpenPeriod] = useState(false);
+  const [openYear, setOpenYear] = useState(false);
+  const [openMonth, setOpenMonth] = useState(false);
+
+  const [periodItems, setPeriodItems] = useState([
+    { label: 'All', value: 'all' },
+    { label: 'Monthly', value: 'month' },
+    { label: 'Semi-Annually', value: 'smonths' },
+    { label: 'Annually', value: 'year' },
+  ]);
+
+  const [yearItems, setYearItems] = useState(
+    [2022, 2023, 2024, 2025].map(y => ({ label: `${y}`, value: y }))
+  );
+
+  const [monthItems, setMonthItems] = useState(
+    Array.from({ length: 12 }, (_, i) => ({
+      label: `${i + 1}`,
+      value: i + 1,
+    }))
+  );
+
+
+  const fetchVolunteers = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+
+      if (period !== 'all') params.append('period', period);
+
+      if (['month', 'smonths', 'year'].includes(period)) {
+        params.append('year', year);
+      }
+
+      if (period === 'month') {
+        params.append('month', month);
+      }
+
+      const fullUrl = `${ipAdd}:5000/volunteers/top/all-honors?${params.toString()}`;
+      console.log('📡 Request URL:', fullUrl);
+
+      const response = await fetch(fullUrl);
+
+      if (!response.ok) {
+        Alert.alert('Error', `Failed to fetch data: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setVolunteers(data);
+
+    } catch (error) {
+      console.error('Error fetching volunteers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchHonors = async () => {
-      try {
-        const url =
-          period === "all"
-            ? `${ipAdd}:5000/volunteers/top/all-honors`
-            : `${ipAdd}:5000/volunteers/top/all-honors?period=${period}`;
-        const response = await axios.get(url);
-        const data = Array.isArray(response.data) ? response.data : [response.data];
-        setHonors(data);
-      } catch (error) {
-        console.error("Error fetching honors:", error);
-      }
-    };
-
-    fetchHonors();
+    setYear(new Date().getFullYear());
+    setMonth(new Date().getMonth() + 1);
   }, [period]);
 
-  const formatPeriod = (start, end) => {
-    return `${new Date(start).toLocaleDateString()} - ${new Date(end).toLocaleDateString()}`;
-  };
-
-  const periodLabels = {
-    all: "All",
-    month: "Monthly",
-    smonths: "Semi-Annual",
-    year: "Yearly",
-  };
+  useEffect(() => {
+    setShowConfetti(true);
+    fetchVolunteers();
+  }, [period, year, month]);
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Honor Board</Text>
+    <View style={styles.container}>
+      {showConfetti && (
+        <ConfettiCannon
+          count={100}
+          origin={{ x: 200, y: -10 }}
+          fadeOut={true}
+          onAnimationEnd={() => setShowConfetti(false)}
+        />
+      )}
 
-      <View style={styles.buttons}>
-        {Object.entries(periodLabels).map(([key, label]) => (
-          <TouchableOpacity
-            key={key}
-            style={[
-              styles.periodBtn,
-              period === key && styles.activeBtn
-            ]}
-            onPress={() => setPeriod(key)}
-          >
-            <Text style={styles.btnText}>{label}</Text>
-          </TouchableOpacity>
-        ))}
+      <Text style={styles.title}>🎉 Honor Board 🎉</Text>
+
+      <View style={styles.filterContainer}>
+        <View style={[styles.dropdownWrapper, styles.dropdownWrapperHorizontal]}>
+          <Text style={styles.label}>Period:</Text>
+          <DropDownPicker
+            open={openPeriod}
+            value={period}
+            items={periodItems}
+            setOpen={setOpenPeriod}
+            setValue={setPeriod}
+            setItems={setPeriodItems}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownBox}
+            zIndex={4000}
+          />
+        </View>
+
+        {['month', 'smonths', 'year'].includes(period) && (
+          <View style={[styles.dropdownWrapper, styles.dropdownWrapperHorizontal]}>
+            <Text style={styles.label}>Year:</Text>
+            <DropDownPicker
+              open={openYear}
+              value={year}
+              items={yearItems}
+              setOpen={setOpenYear}
+              setValue={setYear}
+              setItems={setYearItems}
+              style={styles.dropdown}
+              dropDownContainerStyle={styles.dropdownBox}
+              zIndex={3000}
+            />
+          </View>
+        )}
+
+        {period === 'month' && (
+          <View style={[styles.dropdownWrapper, styles.dropdownWrapperHorizontal]}>
+            <Text style={styles.label}>Month:</Text>
+            <DropDownPicker
+              open={openMonth}
+              value={month}
+              items={monthItems}
+              setOpen={setOpenMonth}
+              setValue={setMonth}
+              setItems={setMonthItems}
+              style={styles.dropdown}
+              dropDownContainerStyle={styles.dropdownBox}
+              zIndex={2000}
+            />
+          </View>
+        )}
       </View>
 
-      <View style={styles.grid}>
-       {honors.map((vol, index) => (
-    <View key={`${vol.user_id}-${index}`} style={styles.card}>
-      <Image source={{ uri: vol.image }} style={styles.avatar} />
-      <Text style={styles.name}>{vol.full_name}</Text>
-      <Text style={styles.points}>Points: {vol.total_points}</Text>
-      <Text style={styles.period}>
-        Period: {formatPeriod(vol.period_start, vol.period_end)}
-      </Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#2e7d32" />
+      ) : (
+        <ScrollView style={styles.volunteerList}>
+          {volunteers.length === 0 ? (
+            <Text style={styles.noVolunteers}>No volunteers found for this period.</Text>
+          ) : (
+            volunteers.map((v, idx) => (
+              <TouchableOpacity
+                key={idx}
+                style={styles.volunteerCard}
+              onPress={() => {
+  setShowConfetti(true);
+ 
+}}
+
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={{ uri: v.image || 'https://via.placeholder.com/60' }}
+                  style={styles.avatar}
+                />
+                <View style={styles.volunteerInfo}>
+                  <Text style={styles.volunteerName}>{v.full_name}</Text>
+                  <Text style={styles.volunteerPoints}>Points: {v.total_points}</Text>
+                  <Text style={styles.volunteerPeriod}>
+                    From {v.period_start} to {v.period_end}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
+      )}
     </View>
-  ))}
-      </View>
-    </ScrollView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#E6F4EA", // أخضر فاتح جداً مريح للعين
+    backgroundColor: '#E8F5E9',
+    padding: 16,
   },
   title: {
-    fontSize: 30,
-    textAlign: "center",
-    marginVertical: 25,
-    fontWeight: "700",
-    color: "#2E7D32", // أخضر غامق رسمي وجميل
-    letterSpacing: 1.2,
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1e3a1e',
+    textAlign: 'center',
+    marginBottom: 20,
   },
-  buttons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    flexWrap: "wrap",
-    marginBottom: 30,
-    gap: 12,
+ filterContainer: {
+  borderRadius: 12,
+  padding: 12,
+  marginBottom: 16,
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+
+  // إضافة البوردر
+  borderWidth: 1.8,
+  borderColor: '#34d399',  // أخضر فاتح وجميل
+
+  // إضافة ظل ناعم
+  shadowColor: '#34d399',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.25,
+  shadowRadius: 8,
+
+  elevation: 6, // للاندرويد
+  backgroundColor: '#E8F5E9', // مهم عشان يظهر البوردر والشادو بوضوح
+  zIndex: 1000,
+},
+
+  dropdownWrapper: {
+    marginBottom: 14,
+    zIndex: 1000,
   },
-  periodBtn: {
-    backgroundColor: "#A5D6A7", // أخضر فاتح هادي
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-    marginHorizontal: 5,
-    shadowColor: "#388E3C",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 5,
+  dropdownWrapperHorizontal: {
+    flex: 1,
+    minWidth: 100,
+    marginRight: 12,
   },
-  activeBtn: {
-    backgroundColor: "#2E7D32", // أخضر غامق للزر النشط
-  },
-  btnText: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  grid: {
-    gap: 20,
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingVertical: 25,
-    paddingHorizontal: 18,
-    alignItems: "center",
-    marginBottom: 24,
-    shadowColor: "#1B5E20",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  avatar: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    marginBottom: 15,
-    borderWidth: 3,
-    borderColor: "#66BB6A",
-  },
-  name: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1B5E20",
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#065f46',
     marginBottom: 6,
-    letterSpacing: 0.4,
   },
-  points: {
+  dropdown: {
+    backgroundColor: '#f9fafb',
+    borderColor: '#10b981',
+    height: 44,
+  },
+  dropdownBox: {
+    borderColor: '#10b981',
+  },
+  volunteerList: {
+    marginTop: 10,
+  },
+  volunteerCard: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#ffffff',
+  padding: 16,
+  marginBottom: 14,
+  borderRadius: 14,
+
+  // ظلال أنيقة مع عمق مناسب
+  elevation: 6,               // أندرويد
+  shadowColor: '#2e7d32',    // لون ظل أخضر هادي (يتناسب مع الثيم)
+  shadowOpacity: 0.15,
+  shadowOffset: { width: 0, height: 6 },
+  shadowRadius: 12,
+
+  // إضافة حدود خفيفة عشان يبرز الكارد
+  borderWidth: 1,
+  borderColor: '#a5d6a7',    // أخضر فاتح شفاف
+
+  // تأثير رفع بسيط عند اللمس (optional)
+  // ممكن تضيف تأثير animated لما تضغط عليه
+},
+
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: '#10b981',
+  },
+  volunteerInfo: {
+    flex: 1,
+  },
+  volunteerName: {
     fontSize: 18,
-    color: "#388E3C",
-    marginBottom: 8,
-    fontWeight: "600",
+    fontWeight: '600',
+    color: '#1f2937',
   },
-  period: {
-    fontSize: 15,
-    color: "#558B2F",
-    fontStyle: "italic",
+  volunteerPoints: {
+    fontSize: 14,
+    color: '#4b5563',
+    marginTop: 2,
+  },
+  volunteerPeriod: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  noVolunteers: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#dc2626',
+    marginTop: 20,
   },
 });
-
 
 export default HonorBoard;

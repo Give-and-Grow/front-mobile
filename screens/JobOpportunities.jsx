@@ -34,7 +34,7 @@ const JobOpportunities = () => {
         });
 
         setJobs(response.data);
-        response.data.forEach((job) => fetchParticipationStatus(job.id, storedToken));
+      
       } catch (error) {
         console.error('Error fetching jobs:', error);
       } finally {
@@ -45,23 +45,7 @@ const JobOpportunities = () => {
     fetchTokenAndJobs();
   }, []);
 
-  const fetchParticipationStatus = async (id, token) => {
-    try {
-      const response = await fetch(
-        `${ipAdd}:5000/opportunity-participants/opportunities/${id}/check-participation`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await response.json();
-      setParticipationStatus((prev) => ({
-        ...prev,
-        [id]: data.is_participating ? 'joined' : 'not joined',
-      }));
-    } catch (error) {
-      console.error('Error checking participation:', error);
-    }
-  };
+  
 
   const handleJoinOpportunity = async (jobId) => {
     const token = await AsyncStorage.getItem('userToken');

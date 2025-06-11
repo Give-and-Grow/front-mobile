@@ -9,10 +9,10 @@ const AdminFilters = ({ initialFilter = null, onFilterSelect }) => {
 
   const filters = [
     {
-      label: 'Dashboard',
+      label: 'Setting',
       value: 'dashboard',
       screen: 'AdminDashboardScreen',
-      icon: 'view-dashboard',
+      icon: 'cog',
     },
     {
       label: 'Approve/Reject Features',

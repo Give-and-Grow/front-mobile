@@ -47,9 +47,7 @@ const NearbyOpportunitiesUser = () => {
 
         if (response.ok && data.opportunities) {
           setOpportunities(data.opportunities);
-          data.opportunities.forEach((opp) =>
-            fetchParticipationStatus(opp.id, token)
-          );
+          
         } else {
           setError(data.msg || "No nearby opportunities found.");
         }
@@ -145,43 +143,7 @@ const NearbyOpportunitiesUser = () => {
   const handleProfilePress = () => {
     navigation.navigate('nearby_opportunitiesUser');
   };
-  const handleCheckParticipation = async (oppId) => {
-    const token = await AsyncStorage.getItem('userToken');
-    if (!token) {
-      alert('Please login first');
-      return;
-    }
   
-    try {
-      const response = await fetch(`${ipAdd}:5000/opportunity-participants/opportunities/${oppId}/check-participation`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        if (data.is_participating) {
-          setParticipationStatus((prevStatus) => ({
-            ...prevStatus,
-            [oppId]: 'joined',
-          }));
-          alert('You are already participating in this opportunity.');
-        } else {
-          setParticipationStatus((prevStatus) => ({
-            ...prevStatus,
-            [oppId]: 'not joined',
-          }));
-          alert('You are not participating in this opportunity.');
-        }
-      } else {
-        alert(data.msg || 'Failed to check participation');
-      }
-    } catch (err) {
-      alert('An error occurred while checking participation');
-    }
-  };
   const handleBooking = (applicationLink) => {
     if (applicationLink) {
       Linking.openURL(applicationLink);
@@ -336,12 +298,7 @@ const NearbyOpportunitiesUser = () => {
                              <Text style={styles.buttonText}>✅ Join</Text>
                            </TouchableOpacity>
                          )}
-                         <TouchableOpacity
-                           style={styles.button}
-                           onPress={() => handleCheckParticipation(opp.id)}
-                         >
-                           <Text style={styles.buttonText}>🔍 Check Participation</Text>
-                         </TouchableOpacity>
+                       
                        </View>
  
           </View>

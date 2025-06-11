@@ -8,7 +8,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   Linking,
+  Alert,
 } from 'react-native';
+
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
@@ -71,7 +74,7 @@ const ApplicationsScreen = () => {
     const downloadCertificate = (applicationId, token) => {
   Alert.alert(
     "Confirm Download",
-    "Do you want to download the certificate?",
+    "Do you want to Send  the certificate to email ?",
     [
       {
         text: "Cancel",
@@ -82,7 +85,7 @@ const ApplicationsScreen = () => {
         onPress: async () => {
           try {
             await axios.get(
-              `http://127.0.0.1:5000/certificates/download-certificate/${applicationId}`,
+              `${ipAdd}:5000/certificates/download-certificate/${applicationId}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             Alert.alert("Success", "The certificate has been sent to your email.");
@@ -121,15 +124,16 @@ const ApplicationsScreen = () => {
           </TouchableOpacity>
         )}
 
-       {showCertificateButton && (
-          <TouchableOpacity
-            style={[styles.evaluateButton, { backgroundColor: '#388e3c', marginTop: 10 }]}
-            onPress={downloadCertificate}
-          >
-            <Text style={styles.evaluateText}>Download Certificate</Text>
-            <Icon name="download" size={20} color="#fff" />
-          </TouchableOpacity>
-       )}
+     {showCertificateButton && (
+  <TouchableOpacity
+    style={[styles.evaluateButton, { backgroundColor: '#388e3c', marginTop: 10 }]}
+    onPress={() => downloadCertificate(item.opportunity.id, token)}
+  >
+    <Text style={styles.evaluateText}>Download Certificate</Text>
+    <Icon name="download" size={20} color="#fff" />
+  </TouchableOpacity>
+)}
+
       </View>
     );
   };
