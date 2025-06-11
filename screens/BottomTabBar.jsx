@@ -48,9 +48,10 @@ const BottomTabBar = ({ activeTab, setActiveTab }) => {
 
   const adminTabs = [
     { name: 'Home', icon: 'home', library: 'FontAwesome', screen: 'homepage' },
-    { name: 'Opportunities', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'AdminDashboardScreen' },
-    { name: 'Users', icon: 'users', library: 'FontAwesome', screen: 'ManageUsers' },
-    { name: 'Reports', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'ReportsScreen' },
+   { name: 'Manage', icon: 'tasks', library: 'FontAwesome', screen: 'adminfeaturerejectapprove' },
+
+    { name: 'Users', icon: 'users', library: 'FontAwesome', screen: 'AccountsDashboard' },
+    { name: 'Dashbord', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'DashbordData' },
   { name: 'HonorBoard', icon: 'medal-outline', library: 'Ionicons', screen: 'HonorBoard' },
 
 

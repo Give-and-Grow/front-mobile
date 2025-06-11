@@ -259,25 +259,7 @@ export default function AdminDashboardScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.card}>
-          <TextInput
-            style={styles.input}
-            placeholder="Year"
-            value={year}
-            onChangeText={setYear}
-            keyboardType="numeric"
-          />
-          <TouchableOpacity style={styles.cardButton} onPress={handleGetUsers}>
-            <Text style={styles.buttonText}>Get Users </Text>
-          </TouchableOpacity>
-          <View style={styles.usersList}>
-            {users.length > 0 ? (
-              users.map((user, index) => <Text key={index}>{user.username}</Text>)
-            ) : (
-              <Text>No users found for this year.</Text>
-            )}
-          </View>
-        </View>
+       
       </View>
 
       <View style={styles.cardRow}>
