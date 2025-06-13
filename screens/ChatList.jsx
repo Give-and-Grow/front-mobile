@@ -134,7 +134,7 @@ const [activeTab, setActiveTab] = useState('chatList');
 
   return (
    <View style={{ flex: 1 }}>
-    <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 100 }}>
+   
     <View style={styles.container}>
       <Text style={styles.header}>Chat </Text>
       <TextInput
@@ -159,7 +159,7 @@ const [activeTab, setActiveTab] = useState('chatList');
       )}
         
     </View>
-    </ScrollView>
+   
      <BottomTabBar
               activeTab={activeTab}
               setActiveTab={setActiveTab}

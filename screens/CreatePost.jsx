@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { launchImageLibrary } from 'react-native-image-picker';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import BottomTabBar from './BottomTabBar';
+import ipAdd from '../scripts/helpers/ipAddress';
 const CreatePost = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -71,7 +72,7 @@ const CreatePost = () => {
     };
 
     try {
-      const response = await fetch(`http://192.168.1.107:5000/posts/`, {
+      const response = await fetch(`${ipAdd}:5000/posts/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

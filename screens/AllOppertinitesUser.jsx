@@ -284,6 +284,37 @@ const [summaryLoading, setSummaryLoading] = useState({});
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
     Linking.openURL(url).catch((err) => console.error('  error :', err));
   };
+  useEffect(() => {
+  const fetchParticipationStatus = async () => {
+  const newStatus = {};
+const token = await AsyncStorage.getItem("userToken");
+
+  for (const opp of opportunities) {
+    try {
+      const res = await fetch(`${ipAdd}:5000/user-participation/${opp.id}/is_participant`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      newStatus[opp.id] = data.status || 'not_joined'; // ممكن تكون accepted, pending, rejected, أو null
+    } catch (error) {
+      console.error("Error fetching participation:", error);
+      newStatus[opp.id] = 'error';
+    }
+  }
+
+  setParticipationStatus(newStatus);
+};
+
+
+  if (opportunities.length > 0) {
+    fetchParticipationStatus();
+  }
+}, [opportunities]);
   return (
    
     <ScreenLayout onFilterSelect={handleFilterSelect} initialFilter="All">
@@ -426,25 +457,69 @@ const [summaryLoading, setSummaryLoading] = useState({});
               <Text style={styles.buttonText}>🚀 Apply Now</Text>
             </TouchableOpacity>
 
-            {/* Join/Withdraw buttons */}
-            <View style={styles.row}>
-              {participationStatus[opp.id] === "joined" ? (
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={() => handleWithdrawOpportunity(opp.id)}
-                >
-                  <Text style={styles.buttonText}>🚫 Withdraw</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={() => handleJoinOpportunity(opp.id)}
-                >
-                  <Text style={styles.buttonText}>✅ Join</Text>
-                </TouchableOpacity>
-              )}
-             
-            </View>
+      <View style={styles.joinWithdrawContainer}>
+      {opp.status === 'filled' && (
+        <TouchableOpacity disabled style={[styles.btn, styles.full]}>
+          <Text style={styles.btnText}>Full</Text>
+        </TouchableOpacity>
+      )}
+
+      {opp.status === 'open' && (
+        <>
+          {participationStatus[opp.id] === 'accepted' && (
+            <TouchableOpacity disabled style={[styles.btn, styles.accepted]}>
+              <Text style={styles.btnText}>open_Accepted</Text>
+            </TouchableOpacity>
+          )}
+
+          {participationStatus[opp.id] === 'rejected' && (
+            <TouchableOpacity disabled style={[styles.btn, styles.rejected]}>
+              <Text style={styles.btnText}>open_Rejected</Text>
+            </TouchableOpacity>
+          )}
+
+          {participationStatus[opp.id] === 'pending' && (
+            <TouchableOpacity onPress={() => handleWithdrawOpportunity(opp.id)} style={[styles.btn, styles.withdraw]}>
+              <Text style={styles.btnText}>Withdraw</Text>
+            </TouchableOpacity>
+          )}
+
+          {(!participationStatus[opp.id] || participationStatus[opp.id] === 'not_joined') && (
+            <TouchableOpacity onPress={() => handleJoinOpportunity(opp.id)} style={[styles.btn, styles.join]}>
+              <Text style={styles.btnText}>Join</Text>
+            </TouchableOpacity>
+          )}
+        </>
+      )}
+
+      {opp.status === 'closed' && (
+        <>
+          {participationStatus[opp.id] === 'accepted' && (
+            <TouchableOpacity disabled style={[styles.btn, styles.accepted]}>
+              <Text style={styles.btnText}>Accepted – Closed</Text>
+            </TouchableOpacity>
+          )}
+
+          {participationStatus[opp.id] === 'rejected' && (
+            <TouchableOpacity disabled style={[styles.btn, styles.rejected]}>
+              <Text style={styles.btnText}>Rejected – Closed</Text>
+            </TouchableOpacity>
+          )}
+
+          {participationStatus[opp.id] === 'pending' && (
+            <TouchableOpacity onPress={() => handleWithdrawOpportunity(opp.id)} style={[styles.btn, styles.withdraw]}>
+              <Text style={styles.btnText}>Withdraw – Closed</Text>
+            </TouchableOpacity>
+          )}
+
+          {(!participationStatus[opp.id] || participationStatus[opp.id] === 'not_joined') && (
+            <TouchableOpacity disabled style={[styles.btn, styles.closed]}>
+              <Text style={styles.btnText}>Closed</Text>
+            </TouchableOpacity>
+          )}
+        </>
+      )}
+    </View>
           </View>
         ))}
       </ScrollView>
@@ -462,6 +537,40 @@ const [summaryLoading, setSummaryLoading] = useState({});
   );
 };
 const styles = StyleSheet.create({
+  joinWithdrawContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 10,
+  },
+  btn: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 5,
+    alignItems: 'center',
+  },
+  btnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  full: {
+    backgroundColor: '#999',
+  },
+  accepted: {
+    backgroundColor: '#4CAF50',
+  },
+  rejected: {
+    backgroundColor: '#f44336',
+  },
+  withdraw: {
+    backgroundColor: '#ff9800',
+  },
+  join: {
+    backgroundColor: '#2196F3',
+  },
+  closed: {
+    backgroundColor: '#777',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f4f9f4',

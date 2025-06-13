@@ -2,326 +2,188 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  FlatList,
   StyleSheet,
+  ScrollView,
   ActivityIndicator,
   TouchableOpacity,
-  Alert,
+  Image,
+  Alert
 } from 'react-native';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import ipAdd from "../scripts/helpers/ipAddress";
-import ScreenLayout from '../screens/ScreenLayout';
+import { useIsFocused } from '@react-navigation/native';
+import FilterComponent from './FilterComponent';
+import OpportunityFilters from './OpportunityFilters';
 import BottomTabBar from './BottomTabBar';
-const VolunteerOpportunities = () => {
-   const [summaries, setSummaries] = useState({});
-    const [summaryLoading, setSummaryLoading] = useState({});
-  const [jobs, setJobs] = useState([]);
+import ipAdd from '../scripts/helpers/ipAddress';  
+export default function VolunteerOpportunities() {
+  const [opportunities, setOpportunities] = useState([]);
+  const [filteredOpportunities, setFilteredOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [participationStatus, setParticipationStatus] = useState({});
- const handleProfilePress = () => {
-    navigation.navigate('VolunteerOpportunities');
-  
-  };
-  const [activeTab, setActiveTab] = useState('volunteropp');
+  const [showMoreDetails, setShowMoreDetails] = useState({});
+  const isFocused = useIsFocused();
+
   useEffect(() => {
-    const fetchTokenAndJobs = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem('userToken');
-        if (!storedToken) return;
+    if (isFocused) fetchOpportunities();
+  }, [isFocused]);
 
-        const response = await axios.get(`${ipAdd}:5000/recommendations/opportunities?type=volunteer`, {
-          headers: { Authorization: `Bearer ${storedToken}` },
-        });
-
-        setJobs(response.data);
-        response.data.forEach((job) => fetchParticipationStatus(job.id, storedToken));
-      } catch (error) {
-        console.error('Error fetching volunteer opportunities:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTokenAndJobs();
-  }, []);
-
-  const fetchParticipationStatus = async (id, token) => {
-    try {
-      const response = await fetch(
-        `${ipAdd}:5000/opportunity-participants/opportunities/${id}/check-participation`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await response.json();
-      setParticipationStatus((prev) => ({
-        ...prev,
-        [id]: data.is_participating ? 'joined' : 'not joined',
-      }));
-    } catch (error) {
-      console.error('Error checking participation:', error);
-    }
-  };
-
-  const handleJoinOpportunity = async (jobId) => {
+  const fetchOpportunities = async () => {
+  try {
     const token = await AsyncStorage.getItem('userToken');
-    if (!token) return Alert.alert('Error', 'Please login first');
-
-    try {
-      const response = await fetch(`${ipAdd}:5000/user-participation/${jobId}/join`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ opportunity_id: jobId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        Alert.alert('Success', 'You joined this volunteer opportunity');
-        setParticipationStatus((prev) => ({
-          ...prev,
-          [jobId]: 'joined',
-        }));
-      } else {
-        if (data.msg && data.msg.includes('Volunteer settings not found')) {
-          Alert.alert('Volunteer Settings Missing', 'Please complete your volunteer profile first.');
-        } else {
-          Alert.alert('Error', data.message || 'Failed to join');
-        }
+    const response = await fetch(`${ipAdd}:5000/recommendations/opportunities?type=volunteer`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       }
-    } catch (err) {
-      console.error('Join error:', err);
-      Alert.alert('Error', 'Something went wrong while joining');
-    }
-  };
+    });
 
-  const handleWithdrawOpportunity = async (jobId) => {
-    const token = await AsyncStorage.getItem('userToken');
-    if (!token) return Alert.alert('Error', 'Please login first');
+    const data = await response.json();
+    const items = Array.isArray(data) ? data : data.opportunities || [];
 
-    try {
-      const response = await fetch(`${ipAdd}:5000/user-participation/${jobId}/withdraw`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        Alert.alert('Success', 'You withdrew from this volunteer opportunity');
-        setParticipationStatus((prev) => ({
-          ...prev,
-          [jobId]: 'not joined',
-        }));
-      } else {
-        Alert.alert('Error', 'Failed to withdraw');
-      }
-    } catch (err) {
-      Alert.alert('Error', 'Something went wrong while withdrawing');
-    }
-  };
-  const fetchSummary = async (oppId) => {
-    if (summaries[oppId]) {
-      // التلخيص موجود، نرجعه فوراً
-      return summaries[oppId];
-    }
-  
-    const token = await AsyncStorage.getItem('userToken');
-    if (!token) {
-      alert('Please login first');
-      return;
-    }
-  
-    setSummaryLoading((prev) => ({ ...prev, [oppId]: true }));
-  
-    try {
-      const response = await fetch(`${ipAdd}:5000/opportunities/summary/${oppId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      const data = await response.json();
-      console.log("Summary data for oppId", oppId, data);
-  
-      if (response.ok && data.summary) {
-        setSummaries((prev) => ({ ...prev, [oppId]: data.summary }));
-        return data.summary;  // ترجع التلخيص اللي جاك من السيرفر
-      } else {
-        alert(data.msg || 'Failed to fetch summary');
-        return null;
-      }
-    } catch (err) {
-      console.error("Error fetching summary:", err);
-      alert('An error occurred while fetching summary');
-      return null;
-    } finally {
-      setSummaryLoading((prev) => ({ ...prev, [oppId]: false }));
-    }
-  };
-  const renderItem = ({ item }) => {
-    const status = participationStatus[item.id];
-
-    return (
-      <View style={styles.card}>
-        <Text style={styles.title}>
-          <Icon name="briefcase" size={18} color="#2f855a" /> {item.title}
-        </Text>
-        <Text style={styles.info}><Icon name="map-marker" size={16} /> {item.location}</Text>
-        <Text style={styles.info}><Icon name="calendar" size={16} /> {item.start_date} - {item.end_date}</Text>
-        <Text style={styles.info}><Icon name="envelope" size={16} /> {item.contact_email}</Text>
-
-        <Text style={styles.label}>Skills:</Text>
-        {item.skills.map((skill, index) => (
-          <Text key={index} style={styles.skill}>• {skill}</Text>
-        ))}
-
-        <Text style={styles.label}>Tags:</Text>
-        <View style={styles.tagsContainer}>
-          {item.tags.map((tag, index) => (
-            <Text key={index} style={styles.tag}>#{tag}</Text>
-          ))}
-        </View>
-
-        <Text style={styles.description}>
-          {item.description.substring(0, 150)}...
-        </Text>
-
-        <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: status === 'joined' ? '#e53e3e' : '#38a169' },
-          ]}
-          onPress={() =>
-            status === 'joined'
-              ? handleWithdrawOpportunity(item.id)
-              : handleJoinOpportunity(item.id)
-          }
-        >
-          <Text style={styles.buttonText}>
-            {status === 'joined' ? 'Withdraw' : 'Join'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#38a169" />
-      </View>
-    );
+    setOpportunities(items);
+    setFilteredOpportunities(items);
+    fetchParticipationStatuses(items);
+  } catch (err) {
+   // console.error(err);
+    setError('Failed to load opportunities');
+  } finally {
+    setLoading(false);
   }
-
-  return (
-    <ScreenLayout initialFilter="Volunteer">
-      <FlatList
-        data={jobs}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.container}
-        ListHeaderComponent={<Text style={styles.header}>Available Volunteer Opportunities</Text>}
-        ListFooterComponent={<View style={{ height: 20 }} />}
-      />
-      
-
-      
-       <View>
-    <BottomTabBar
-  activeTab={activeTab}
-  setActiveTab={setActiveTab}
-  handleProfilePress={handleProfilePress}
-/>
-    </View>
-    </ScreenLayout>
-  );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: '#f0fff4',
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#276749',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2f855a',
-    marginBottom: 6,
-  },
-  info: {
-    fontSize: 14,
-    color: '#4a5568',
-    marginVertical: 2,
-  },
-  label: {
-    fontWeight: 'bold',
-    color: '#2f855a',
-    marginTop: 8,
-  },
-  skill: {
-    color: '#2d3748',
-    marginLeft: 8,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 4,
-  },
-  tag: {
-    backgroundColor: '#c6f6d5',
-    color: '#22543d',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 6,
-    marginTop: 4,
-    fontSize: 12,
-  },
-  description: {
-    marginTop: 8,
-    color: '#2d3748',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  button: {
-    marginTop: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-});
+  const fetchParticipationStatuses = async (opps) => {
+    const token = await AsyncStorage.getItem('userToken');
+    const newStatus = {};
+    for (const opp of opps) {
+      try {
+        const res = await fetch(`${ipAdd}:5000/user-participation/${opp.id}/is_participant`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        newStatus[opp.id] = data.status || 'not_joined';
+      } catch {
+        newStatus[opp.id] = 'error';
+      }
+    }
+    setParticipationStatus(newStatus);
+  };
 
-export default VolunteerOpportunities;
+  const handleJoin = async (opportunityId) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const res = await fetch(`${ipAdd}:5000/user-participation/${opportunityId}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        Alert.alert('Success', 'Joined successfully');
+        setParticipationStatus(prev => ({ ...prev, [opportunityId]: 'joined' }));
+      } else {
+        Alert.alert('Error', data.msg || 'Failed to join');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Join request failed');
+    }
+  };
+
+  const handleLeave = async (opportunityId) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const res = await fetch(`${ipAdd}:5000/user-participation/${opportunityId}/withdraw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        Alert.alert('Info', 'You have left the opportunity');
+        setParticipationStatus(prev => ({ ...prev, [opportunityId]: 'not_joined' }));
+      } else {
+        Alert.alert('Error', data.msg || 'Failed to leave');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Leave request failed');
+    }
+  };
+
+  const toggleDetails = (id) => {
+    setShowMoreDetails(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  return (
+    <View style={styles.container}>
+      <ScrollView>
+        <Text style={styles.title}>🌱 Volunteer Opportunities</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="green" />
+        ) : error ? (
+          <Text style={styles.error}>{error}</Text>
+        ) : (
+          filteredOpportunities.map((opp) => (
+            <View key={opp.id} style={styles.card}>
+              {opp.image_url && (
+                <Image source={{ uri: opp.image_url }} style={styles.image} />
+              )}
+              <Text style={styles.cardTitle}>🎯 {opp.title}</Text>
+              <Text>🏢 {opp.organization_name}</Text>
+              <Text>🕓 {opp.start_time} - {opp.end_time}</Text>
+              <Text>📍 {opp.location}</Text>
+              <TouchableOpacity onPress={() => toggleDetails(opp.id)}>
+                <Text style={styles.detailsBtn}>{showMoreDetails[opp.id] ? 'Hide Details ▲' : 'Show Details ▼'}</Text>
+              </TouchableOpacity>
+              {showMoreDetails[opp.id] && (
+                <View>
+                  <Text>📅 {opp.start_date} to {opp.end_date}</Text>
+                  <Text>🛠️ Skills:</Text>
+                  {opp.skills.map(skill => (
+                    <Text key={skill.id} style={styles.badge}>💡 {skill.name}</Text>
+                  ))}
+                  <Text>Status: {opp.status.value}</Text>
+                </View>
+              )}
+              <View style={styles.btnRow}>
+                {opp.status === 'open' && !['accepted', 'pending'].includes(participationStatus[opp.id]) && (
+                  <TouchableOpacity style={styles.joinBtn} onPress={() => handleJoin(opp.id)}>
+                    <Text style={styles.btnText}>Join</Text>
+                  </TouchableOpacity>
+                )}
+                {participationStatus[opp.id] === 'pending' && (
+                  <TouchableOpacity style={styles.leaveBtn} onPress={() => handleLeave(opp.id)}>
+                    <Text style={styles.btnText}>Withdraw</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          ))
+        )}
+      </ScrollView>
+      <BottomTabBar />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f0f4f7', padding: 10 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 10 },
+  error: { color: 'red', textAlign: 'center' },
+  card: { backgroundColor: '#fff', borderRadius: 10, padding: 15, marginBottom: 15, elevation: 2 },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 6 },
+  image: { width: '100%', height: 150, borderRadius: 10, marginBottom: 10 },
+  detailsBtn: { color: '#388e3c', marginTop: 8, fontWeight: 'bold' },
+  badge: { backgroundColor: '#e0f2f1', padding: 4, borderRadius: 4, marginTop: 2 },
+  btnRow: { flexDirection: 'row', marginTop: 10 },
+  joinBtn: { backgroundColor: '#4caf50', padding: 10, borderRadius: 6 },
+  leaveBtn: { backgroundColor: '#d32f2f', padding: 10, borderRadius: 6 },
+  btnText: { color: '#fff', fontWeight: 'bold' },
+});
