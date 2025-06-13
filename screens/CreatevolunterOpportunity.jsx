@@ -6,12 +6,18 @@ import { useNavigation } from '@react-navigation/native';
 import ipAdd from '../scripts/helpers/ipAddress';
 import LayoutWithFilters from './LayoutWithFiltersOrg';
 import BottomTabBar from './BottomTabBar';
+import InviteFrame from './InviteFrame';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { launchImageLibrary } from 'react-native-image-picker';
+
 const CreatevolunterOpportunity = () => {
   const [activeTab, setActiveTab] = useState('creatvoulunter');
-    
+    const [createdOpportunityId, setCreatedOpportunityId] = useState(null);
+
     const handleProfilePress = () => {
       navigation.navigate('CreatevolunterOpportunity');
     };
+    const [showInviteFrame, setShowInviteFrame] = useState(false);
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -28,6 +34,8 @@ const CreatevolunterOpportunity = () => {
 const [filter, setFilter] = useState("add_job");
 const [startTime, setStartTime] = useState('');
 const [endTime, setEndTime] = useState('');
+const [successMessage, setSuccessMessage] = useState('');
+
 const [volunteerDays, setVolunteerDays] = useState([]);
 const timeOptions = [
   '08:00', '09:00', '10:00', '11:00', '12:00',
@@ -69,46 +77,67 @@ const dayOptions = [
       return null;
     }
   };
+const handleSubmit = async () => {
+  const token = await getToken();
+  if (!token) {
+    Alert.alert('Error', 'You must be logged in to create an opportunity.');
+    return;
+  }
 
-  const handleSubmit = async () => {
-    const token = await getToken();
-    if (!token) {
-      Alert.alert('Error', 'You must be logged in to create an opportunity.');
-      return;
-    }
+  const formData = {
+    title,
+    description,
+    location,
+    start_date: startDate.trim(),
+    end_date: endDate.trim(),
+    status: 'open',
+    image_url: imageUrl,
+    application_link: applicationLink,
+    contact_email: contactEmail.trim(),
+    opportunity_type: 'volunteer',
+    skills: selectedSkills,
+    max_participants: parseInt(maxParticipants),
+    base_points: parseInt(basePoints),
+    start_time: startTime,
+    end_time: endTime,
+    volunteer_days: volunteerDays,
+  };
 
-    const formData = {
-      title,
-      description,
-      location,
-      start_date: startDate.trim(),
-      end_date: endDate.trim(),
-      status: 'open',
-      image_url: imageUrl,
-      application_link: applicationLink,
-      contact_email: contactEmail.trim(),
-      opportunity_type: 'volunteer',
-      skills: selectedSkills,
-      max_participants: parseInt(maxParticipants),
-      base_points: parseInt(basePoints),
-      start_time: startTime,
-     end_time: endTime,
-     volunteer_days: volunteerDays,
-    };
+  try {
+    // Step 1: Create opportunity
+    const response = await axios.post(`${ipAdd}:5000/opportunities/create`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
+    const newOpportunityId = response.data?.opportunity_id;
+    setCreatedOpportunityId(newOpportunityId);
+
+    // Step 2: Create chat for this opportunity
     try {
-      await axios.post(`${ipAdd}:5000/opportunities/create`, formData, {
+      const chatResponse = await axios.post(`${ipAdd}:5000/chat/opportunity/${newOpportunityId}/create`, {}, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      Alert.alert('Success', 'Opportunity created successfully!');
-      navigation.navigate('homepage');
-    } catch (error) {
-      console.error(error.response?.data || error);
-      Alert.alert('Error', 'Failed to create opportunity!');
+
+      console.log("Chat created successfully:", chatResponse.data);
+
+      setShowInviteFrame(true); // Show invite UI
+      setSuccessMessage("Opportunity and chat created successfully!");
+
+    } catch (chatError) {
+      console.error("Failed to create chat", chatError.response?.data || chatError);
+      setSuccessMessage("Opportunity created, but failed to create chat.");
     }
-  };
+
+  } catch (error) {
+    console.error("Failed to create opportunity", error.response?.data || error);
+    Alert.alert("Error", "Failed to create opportunity.");
+  }
+};
+
 
   const renderStepIndicator = () => (
     <View style={styles.stepIndicator}>
@@ -126,9 +155,29 @@ const dayOptions = [
     setFilter(selectedFilter);
     // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
   };
+  const handleSelectImage = () => {
+  const options = {
+    mediaType: 'photo',
+    quality: 0.8,
+  };
+
+  launchImageLibrary(options, (response) => {
+    if (response.didCancel) {
+      console.log('User cancelled image picker');
+    } else if (response.errorCode) {
+      console.log('ImagePicker Error: ', response.errorMessage);
+    } else if (response.assets && response.assets.length > 0) {
+      const selectedImage = response.assets[0];
+      setImageUrl(selectedImage.uri); // استبدل imageUrl بالـ URI
+    }
+  });
+};
+
   return (
+    
     <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="add_volunteer">
-    <ScrollView contentContainerStyle={styles.container}>
+   <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 100 }}>
+
       <Image
         source={require('../assets/images/volunteroppertunites.webp')}
         style={styles.banner}
@@ -195,6 +244,14 @@ const dayOptions = [
             value={imageUrl}
             onChangeText={setImageUrl}
           />
+
+<TouchableOpacity style={styles.uploadButton} onPress={handleSelectImage}>
+  <Icon name="camera" size={20} color="#fff" style={{ marginRight: 10 }} />
+  <Text style={styles.buttonText}>Choose Image</Text>
+</TouchableOpacity>
+
+
+
           <TextInput
             style={styles.input}
             placeholder="Application Link"
@@ -297,6 +354,16 @@ const dayOptions = [
               <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
           </View>
+          {showInviteFrame && createdOpportunityId && (
+  <InviteFrame
+    onYes={() => {
+      navigation.navigate('InviteUsersScreen', { opportunityId: createdOpportunityId });
+    }}
+    onNo={() => setShowInviteFrame(false)}
+  />
+)}
+
+
         </>
       )}
     </ScrollView>
@@ -396,6 +463,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 10,
   },
+ uploadButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#66bb6a', // أخضر أفتح
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 16,
+  marginTop: 10,
+  marginBottom: 16, // ✨ أضفنا مسافة من الأسفل
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+  elevation: 4,
+},
+
+
+
 });
 
 export default CreatevolunterOpportunity;

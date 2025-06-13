@@ -8,6 +8,7 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { Modal, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,6 +17,7 @@ import ipAdd from '../scripts/helpers/ipAddress';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomTabBar from './BottomTabBar';
 const ChatBox = ({ route }) => {
+  
   const { opportunityId, title } = route.params;
   const [messages, setMessages] = useState([]);
   const [token, setToken] = useState('');
@@ -124,6 +126,7 @@ const updateMessage = async (messageId, newContent) => {
   const isCurrentUser = item.user_id === userId;
 
   return (
+    
     <View style={styles.messageContainer}>
       <Image source={{ uri: item.sender_profile_picture }} style={styles.avatar} />
       <View style={styles.messageContent}>
@@ -151,6 +154,8 @@ const updateMessage = async (messageId, newContent) => {
 
 
   return (
+      <View style={{ flex: 1 }}>
+         
   <View style={styles.container}>
     <Text style={styles.header}> {title}</Text>
     {loading ? (
@@ -223,18 +228,19 @@ const updateMessage = async (messageId, newContent) => {
         </View>
       </Modal>
   </View>
+ 
+      
+      </View>
 );
 
 };
 
 export default ChatBox;
 const styles = StyleSheet.create({
-  container: {
+ container: {
     flex: 1,
-    backgroundColor: '#e6f4ea', // خلفية ناعمة مريحة للعين مع لمسة خضراء فاتحة
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 80, // مساحة للإدخال أسفل الشاشة
+    backgroundColor: '#f0fdf4', // لون خلفية أفتح ومريح للعين
+    padding: 16,
   },
   header: {
     fontSize: 22,

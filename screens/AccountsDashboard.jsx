@@ -12,7 +12,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import ipAdd from "../scripts/helpers/ipAddress";
-
+import BottomTabBar from './BottomTabBar';
 const roles = ["", "admin", "user", "organization"];
 
 const iconMap = {
@@ -137,8 +137,12 @@ export default function AccountsDashboard() {
       fetchStats();
     }
   }, [search, role, isActive, page, token]);
-
+const handleProfilePress = () => {
+    navigation.navigate('AccountsDashboard');
+  };
+   const [activeTab, setActiveTab] = useState('dash');
   return (
+    
     <View style={styles.container}>
       <Text style={styles.title}>User Accounts</Text>
 

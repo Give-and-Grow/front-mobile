@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -15,6 +16,7 @@ import ipAdd from '../scripts/helpers/ipAddress';
 import BottomTabBar from './BottomTabBar';
 import { useNavigation } from '@react-navigation/native';
 const ChatList = () => {
+  
   const [token, setToken] = useState('');
   const [role, setRole] = useState('');
   const [chats, setChats] = useState([]);
@@ -131,7 +133,8 @@ const [activeTab, setActiveTab] = useState('chatList');
 );
 
   return (
- 
+   <View style={{ flex: 1 }}>
+    <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 100 }}>
     <View style={styles.container}>
       <Text style={styles.header}>Chat </Text>
       <TextInput
@@ -156,7 +159,13 @@ const [activeTab, setActiveTab] = useState('chatList');
       )}
         
     </View>
-    
+    </ScrollView>
+     <BottomTabBar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              handleProfilePress={handleProfilePress}
+            />
+    </View>
  
   );
 };

@@ -110,7 +110,7 @@ const CreateJobOpportunity = () => {
   };
   return (
     <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="add_job">
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 100 }}>
       <Image
        source={require('../assets/images/joboppertinitues.png')}
 

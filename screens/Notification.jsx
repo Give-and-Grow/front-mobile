@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, RefreshControl, StyleSheet } from "react-native";
+import { View, FlatList, RefreshControl, StyleSheet ,ScrollView} from "react-native";
 import { List, Text, Badge, Button } from "react-native-paper";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ipAdd from "../scripts/helpers/ipAddress";
 import { Image } from "react-native";
-
+import BottomTabBar from './BottomTabBar';
 export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [unseenCount, setUnseenCount] = useState(0);
   const [token, setToken] = useState(null);
 const [selectedNotification, setSelectedNotification] = useState(null);
+const handleProfilePress = () => {
+    navigation.navigate('Notification');
+  };
+   const [activeTab, setActiveTab] = useState('Notification');
 const handleNotificationPress = (notification) => {
   setSelectedNotification(notification);
   if (!notification.seen) {
@@ -113,6 +117,9 @@ const handleNotificationPress = (notification) => {
 );
 
   return (
+   
+     <View style={{ flex: 1 }}>
+       <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 100 }}>
     <View style={styles.container}>
       <Text style={styles.header}>Notifications ({unseenCount} new)</Text>
 
@@ -158,14 +165,22 @@ const handleNotificationPress = (notification) => {
         Mark All as Seen
       </Button>
     </View>
+     </ScrollView>
+     <BottomTabBar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              handleProfilePress={handleProfilePress}
+            />
+    </View>
+   
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+ container: {
     flex: 1,
-    padding: 15,
-    backgroundColor: "#e8f5e9", // أخضر فاتح جداً
+    backgroundColor: '#f0fdf4', // لون خلفية أفتح ومريح للعين
+    padding: 16,
   },
   header: {
     fontSize: 24,

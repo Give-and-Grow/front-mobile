@@ -39,7 +39,7 @@ const BottomTabBar = ({ activeTab, setActiveTab }) => {
     { name: 'Home', icon: 'home', library: 'FontAwesome', screen: 'homepage' },
    { name: 'Chat', icon: 'chatbubble-outline', library: 'Ionicons', screen: 'ChatList' },
  { name: 'notification', icon: 'notifications-outline', library: 'Ionicons', screen: 'Notification' },
-{ name: 'HonorBoard', icon: 'medal-outline', library: 'Ionicons', screen: 'HonorBoard' },
+  { name: 'HonorBoard', icon: 'medal-outline', library: 'Ionicons', screen: 'HonorBoard' },
 
     { name: 'Posts', icon: 'users', library: 'FontAwesome', screen: 'FrindsPost' },
     { name: 'Opportunities', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'CreatevolunterOpportunity' },
@@ -49,7 +49,6 @@ const BottomTabBar = ({ activeTab, setActiveTab }) => {
   const adminTabs = [
     { name: 'Home', icon: 'home', library: 'FontAwesome', screen: 'homepage' },
    { name: 'Manage', icon: 'tasks', library: 'FontAwesome', screen: 'adminfeaturerejectapprove' },
-
     { name: 'Users', icon: 'users', library: 'FontAwesome', screen: 'AccountsDashboard' },
     { name: 'Dashbord', icon: 'lightbulb-o', library: 'FontAwesome', screen: 'DashbordData' },
   { name: 'HonorBoard', icon: 'medal-outline', library: 'Ionicons', screen: 'HonorBoard' },

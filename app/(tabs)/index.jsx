@@ -67,6 +67,10 @@ import ChatScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/ChatScree
 import HonorBoard from 'C:/Users/user/Videos/SOFT/front-mobile/screens/HonorBoard.jsx';
 import DashbordData from 'C:/Users/user/Videos/SOFT/front-mobile/screens/DashbordData.jsx';
 import AccountsDashboard from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AccountsDashboard.jsx';
+import DiscountCodeManager from 'C:/Users/user/Videos/SOFT/front-mobile/screens/DiscountCodeManager.jsx';
+import AdsManagerScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdsManagerScreen.jsx';
+import InviteUsersScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/InviteUsersScreen.jsx';
+import InviteFrame from 'C:/Users/user/Videos/SOFT/front-mobile/screens/InviteFrame.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -134,6 +138,10 @@ const Index = () => {
                 <Stack.Screen name="HonorBoard" component={HonorBoard} /> 
                 <Stack.Screen name="DashbordData" component={DashbordData} /> 
                  <Stack.Screen name="AccountsDashboard" component={AccountsDashboard} /> 
+                   <Stack.Screen name="DiscountCodeManager" component={DiscountCodeManager} /> 
+<Stack.Screen name="AdsManagerScreen" component={AdsManagerScreen} /> 
+                   <Stack.Screen name="InviteUsersScreen" component={InviteUsersScreen} /> 
+                     <Stack.Screen name="InviteFrame" component={InviteFrame} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );
