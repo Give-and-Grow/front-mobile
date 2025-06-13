@@ -1,538 +1,647 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, Animated, TouchableOpacity, Image, Modal, Linking, TextInput } from 'react-native';
-import axios from 'axios';
+import { 
+  View, Text, FlatList, TouchableOpacity, TextInput, Image, Modal, Alert, StyleSheet, ScrollView, ActivityIndicator 
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import ipAdd from '../scripts/helpers/ipAddress';
 import LayoutWithFilters from './LayoutWithFiltersOrg';
 import BottomTabBar from './BottomTabBar';
-const OpportunitiesList = () => {
-   const [activeTab, setActiveTab] = useState('list');
-        
-      const handleProfilePress = () => {
-        navigation.navigate('OpportunitiesList');
-      };
+const OpportunityList = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [fadeAnim] = useState(new Animated.Value(0));
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
-  const [modalType, setModalType] = useState(null); // 'details' or 'update'
- const [filter, setFilter] = useState("list_all");
-  const [updateData, setUpdateData] = useState({
+  const [modalType, setModalType] = useState(null);
+  const [filters, setFilters] = useState({ location: '', status: '' });
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [newStatus, setNewStatus] = useState('');
+const [activeTab, setActiveTab] = useState('list');
+    const [filter, setFilter] = useState("list_all");
+
+    const handleProfilePress = () => {
+      navigation.navigate('OpportunityList');
+    };
+  const [updatedData, setUpdatedData] = useState({
     title: '',
     description: '',
     location: '',
     start_date: '',
     end_date: '',
+    status: '',
+    max_participants: '',
+    base_points: '',
     required_points: '',
   });
 
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
+        setLoading(true);
         const token = await AsyncStorage.getItem('userToken');
         if (!token) {
           setError('Token not found');
           setLoading(false);
           return;
         }
-  
-        const response = await axios.get(`${ipAdd}:5000/opportunities/organization`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+
+        const response = await axios.get(`${ipAdd}:5000/opportunities/organization?is_deleted=${showDeleted}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-  
-        // التأكد من أن `required_points` موجود لكل فرصة
-        const updatedOpportunities = response.data.opportunities.map(opportunity => ({
-          ...opportunity,
-          required_points: opportunity.required_points || 0, // تعيين قيمة افتراضية إذا كانت غير موجودة
+
+        const updated = response.data.opportunities.map(o => ({
+          ...o,
+          required_points: o.required_points || 0,
         }));
-  
-        setOpportunities(updatedOpportunities);
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }).start();
-      } catch (error) {
+
+        setOpportunities(updated);
+        setError(null);
+      } catch (err) {
         setError('Failed to load opportunities');
       } finally {
         setLoading(false);
       }
     };
-  
-    fetchOpportunities();
-  }, []);
-  
-  const handleRestore = async (opportunityId) => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        setError('Token not found');
-        return;
-      }
-  
-      const response = await axios.put(
-        `${ipAdd}:5000/opportunities/${opportunityId}/restore`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      if (response.status === 200) {
-        Alert.alert('Success', 'Opportunity restored successfully');
-        // Refresh or update state if needed
-      }
-    } catch (error) {
-      console.error(error);
-      setError('Failed to restore opportunity');
-    }
-  };
-  
-  const handleDelete = async (opportunityId) => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        setError('Token not found');
-        return;
-      }
 
-      const response = await axios.delete( `${ipAdd}:5000/opportunities/${opportunityId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    fetchOpportunities();
+  }, [showDeleted]);
+
+  const handleChangeStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      await axios.put(`${ipAdd}:5000/opportunities/${selectedOpportunity.id}/change-status`, {
+        status: newStatus
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (response.status === 200) {
-        setOpportunities(opportunities.filter((opportunity) => opportunity.id !== opportunityId));
-        Alert.alert('Success', 'Opportunity deleted successfully');
-      }
-    } catch (error) {
+      setOpportunities(prev =>
+        prev.map(o => o.id === selectedOpportunity.id ? { ...o, status: newStatus } : o)
+      );
+
+      closeModal();
+      Alert.alert('Success', 'Status updated successfully');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to update status');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      await axios.delete(`${ipAdd}:5000/opportunities/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOpportunities(prev => prev.filter(o => o.id !== id));
+      Alert.alert('Success', 'Deleted successfully');
+    } catch {
       setError('Failed to delete opportunity');
     }
   };
- 
-  
- 
-  
 
-  const handleSubmitUpdate = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        setError('Token not found');
-        return;
-      }
-
-      const response = await axios.put(
-        `${ipAdd}:5000/opportunities/${selectedOpportunity.id}`,
-        updateData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        const updatedOpportunities = opportunities.map((opportunity) =>
-          opportunity.id === selectedOpportunity.id ? { ...opportunity, ...updateData } : opportunity
-        );
-        setOpportunities(updatedOpportunities);
-        Alert.alert('Success', 'Opportunity updated successfully');
-        closeModal();
-      }
-    } catch (error) {
-      setError('Failed to update opportunity');
-    }
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-    setSelectedOpportunity(null);
-    setModalType(null);
-  };
-  
   const handleMorePress = (opportunity) => {
     setSelectedOpportunity(opportunity);
     setModalType('details');
     setModalVisible(true);
   };
 
-  const handleUpdate = (opportunity) => {
-    if (opportunity.opportunity_type === 'OpportunityType.JOB') {
-      setSelectedOpportunity(opportunity);
-      setUpdateData({
-        title: opportunity.title,
-        description: opportunity.description,
-        location: opportunity.location,
-        start_date: opportunity.start_date,
-        end_date: opportunity.end_date,
-        required_points: opportunity.required_points ? opportunity.required_points.toString() : '',
+  const handleEdit = (opportunity) => {
+    setSelectedOpportunity(opportunity);
+    const commonFields = {
+      title: opportunity.title,
+      description: opportunity.description,
+      location: opportunity.location,
+      start_date: opportunity.start_date,
+      end_date: opportunity.end_date,
+    };
+
+    if (opportunity.opportunity_type === 'volunteer') {
+      setUpdatedData({
+        ...commonFields,
+        status: opportunity.status || '',
+        max_participants: opportunity.max_participants ? String(opportunity.max_participants) : '',
+        base_points: opportunity.base_points ? String(opportunity.base_points) : '',
+        required_points: '',
       });
-      setModalType('update');
-      setModalVisible(true);
-    } else if (opportunity.opportunity_type === 'OpportunityType.VOLUNTEER') {
-      setSelectedOpportunity(opportunity);
-      setUpdateData({
-        title: opportunity.title,
-        description: opportunity.description,
-        location: opportunity.location,
-        start_date: opportunity.start_date,
-        end_date: opportunity.end_date,
-        max_participants: opportunity.max_participants ? opportunity.max_participants.toString() : '',
-        base_points: opportunity.base_points ? opportunity.base_points.toString() : '',
+    } else if (opportunity.opportunity_type === 'job') {
+      setUpdatedData({
+        ...commonFields,
+        status: opportunity.status || '',
+        required_points: opportunity.required_points ? String(opportunity.required_points) : '',
+        max_participants: '',
+        base_points: '',
       });
-      setModalType('update');
-      setModalVisible(true);
-    } else {
-      Alert.alert('Update Not Available', 'This opportunity cannot be updated.');
+    }
+
+    setModalType('edit');
+    setModalVisible(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const type = selectedOpportunity.opportunity_type;
+
+      const allowedFields =
+        type === 'volunteer'
+          ? ['title', 'description', 'location', 'start_date', 'end_date', 'status', 'max_participants', 'base_points']
+          : ['title', 'description', 'location', 'start_date', 'end_date', 'status', 'required_points'];
+
+      const filteredData = {};
+      for (const key of allowedFields) {
+        if (updatedData[key] !== undefined) {
+          filteredData[key] = updatedData[key];
+        }
+      }
+
+      await axios.put(`${ipAdd}:5000/opportunities/${selectedOpportunity.id}`, filteredData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setOpportunities(prev =>
+        prev.map(o => o.id === selectedOpportunity.id ? { ...o, ...filteredData } : o)
+      );
+
+      closeModal();
+      Alert.alert('Success', 'Updated successfully');
+    } catch (err) {
+      Alert.alert('Error', 'Update failed');
     }
   };
-  const formatKey = (key) => {
-    return key
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const handleRestore = async (id) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      await axios.put(`${ipAdd}:5000/opportunities/${id}/restore`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setOpportunities(prev =>
+        prev.map(o => o.id === id ? { ...o, is_deleted: false } : o)
+      );
+
+      Alert.alert('Success', 'Opportunity restored successfully');
+    } catch (err) {
+      setError('Failed to restore opportunity');
+    }
   };
-  if (loading) return <ActivityIndicator size="large" color="#4CAF50" />;
-  if (error) return <Text style={styles.errorText}>{error}</Text>;
-  const handleFilterSelect = (selectedFilter) => {
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedOpportunity(null);
+  };
+
+  const filteredOpportunities = opportunities.filter(o =>
+    o.location.toLowerCase().includes(filters.location.toLowerCase()) &&
+    o.status.toLowerCase().includes(filters.status.toLowerCase())
+  );
+
+  if (loading) return (
+    <View style={styles.centered}>
+      <ActivityIndicator size="large" color="#66bb6a" />
+    </View>
+  );
+
+  if (error) return (
+    <View style={styles.centered}>
+      <Text style={styles.error}>{error}</Text>
+    </View>
+  );
+ const handleFilterSelect = (selectedFilter) => {
     setFilter(selectedFilter);
     // ممكن هنا تحدث الـfetchOpportunities أو تقوم بأي تعامل مع الفلتر الجديد
   };
   return (
-    <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="list_all">
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Available Opportunities</Text>
-      {opportunities.map((opportunity) => (
-        <Animated.View key={opportunity.id} style={[styles.card, { opacity: fadeAnim }]}>
-         <View style={styles.imageContainer}>
-  {opportunity.image_url && (
-    <Image source={{ uri: opportunity.image_url }} style={styles.image} />
-  )}
+    <View style={{ flex: 1 }}>
+       <LayoutWithFilters onFilterSelect={handleFilterSelect} initialFilter="list_all">
+    <View style={styles.container}>
+      <Text style={styles.title}>Available Opportunities</Text>
 
-  <View style={styles.topButtons}>
-    {opportunity.is_deleted === false ? (
-      <TouchableOpacity style={styles.iconButton} onPress={() => handleDelete(opportunity.id)}>
-        <Text style={styles.iconText}>🗑️</Text>
+      <TouchableOpacity
+        style={styles.toggleBtn}
+        onPress={() => setShowDeleted(!showDeleted)}
+      >
+        <Text style={styles.toggleBtnText}>
+          {showDeleted ? 'Show Active Opportunities' : 'Show Deleted Opportunities'}
+        </Text>
       </TouchableOpacity>
-    ) : (
-      <TouchableOpacity style={styles.iconButton} onPress={() => handleRestore(opportunity.id)}>
-        <Text style={styles.iconText}>↩️</Text>
-      </TouchableOpacity>
-    )}
 
-    <TouchableOpacity style={styles.iconButton} onPress={() => handleUpdate(opportunity)}>
-      <Text style={styles.iconText}>✏️</Text>
-    </TouchableOpacity>
-  </View>
-</View>
-
-
-          <Text style={styles.title}>{opportunity.title}</Text>
-          <Text style={styles.description}>{opportunity.description}</Text>
-          <Text style={styles.details}><Text style={styles.bold}>Location:</Text> {opportunity.location}</Text>
-          <Text style={styles.details}><Text style={styles.bold}>Start Date:</Text> {opportunity.start_date}</Text>
-          <Text style={styles.details}><Text style={styles.bold}>End Date:</Text> {opportunity.end_date}</Text>
-          <Text style={styles.details}><Text style={styles.bold}>Opportunity Type:</Text> {opportunity.opportunity_type}</Text>
-          <Text style={styles.details}><Text style={styles.bold}>Status:</Text> {opportunity.status}</Text>
-
-          <TouchableOpacity style={styles.button} onPress={() => handleMorePress(opportunity)}>
-            <Text style={styles.buttonText}>More Details</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      ))}
-
-     {/* Modal لتحديث بيانات الفرصة */}
-{modalVisible && selectedOpportunity && modalType === 'update' && (
-  <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={closeModal}>
-    <View style={styles.modalContainer}>
-      <View style={styles.modalContent}>
-        <Text style={styles.modalTitle}>Update Opportunity</Text>
-        
-        {/* الحقول المشتركة */}
+      {/* Filters */}
+      <View style={styles.filters}>
         <TextInput
+          placeholder="Filter by location"
           style={styles.input}
-          value={updateData.title}
-          onChangeText={(text) => setUpdateData({ ...updateData, title: text })}
-          placeholder="Title"
+          value={filters.location}
+          onChangeText={(text) => setFilters(prev => ({ ...prev, location: text }))}
         />
         <TextInput
+          placeholder="Filter by status"
           style={styles.input}
-          value={updateData.description}
-          onChangeText={(text) => setUpdateData({ ...updateData, description: text })}
-          placeholder="Description"
+          value={filters.status}
+          onChangeText={(text) => setFilters(prev => ({ ...prev, status: text }))}
         />
-        <TextInput
-          style={styles.input}
-          value={updateData.location}
-          onChangeText={(text) => setUpdateData({ ...updateData, location: text })}
-          placeholder="Location"
-        />
-        <TextInput
-          style={styles.input}
-          value={updateData.start_date}
-          onChangeText={(text) => setUpdateData({ ...updateData, start_date: text })}
-          placeholder="Start Date"
-        />
-        <TextInput
-          style={styles.input}
-          value={updateData.end_date}
-          onChangeText={(text) => setUpdateData({ ...updateData, end_date: text })}
-          placeholder="End Date"
-        />
-
-        {/* الحقول الخاصة بـ JOB */}
-        {selectedOpportunity.opportunity_type === 'OpportunityType.JOB' && (
-          <TextInput
-            style={styles.input}
-            value={updateData.required_points}
-            onChangeText={(text) => setUpdateData({ ...updateData, required_points: text })}
-            placeholder="Required Points"
-            keyboardType="numeric"
-          />
-        )}
-
-        {/* الحقول الخاصة بـ VOLUNTEER */}
-        {selectedOpportunity.opportunity_type === 'OpportunityType.VOLUNTEER' && (
-          <>
-            <TextInput
-              style={styles.input}
-              value={updateData.max_participants}
-              onChangeText={(text) => setUpdateData({ ...updateData, max_participants: text })}
-              placeholder="Max Participants"
-              keyboardType="numeric"
-            />
-            <TextInput
-              style={styles.input}
-              value={updateData.base_points}
-              onChangeText={(text) => setUpdateData({ ...updateData, base_points: text })}
-              placeholder="Base Points"
-              keyboardType="numeric"
-            />
-          </>
-        )}
-
-        <TouchableOpacity style={styles.modalButton} onPress={handleSubmitUpdate}>
-          <Text style={styles.buttonText}>Submit Update</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.modalButton} onPress={closeModal}>
-          <Text style={styles.buttonText}>Close</Text>
-        </TouchableOpacity>
       </View>
+
+      <FlatList
+        data={filteredOpportunities}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            {item.image_url ? (
+              <Image
+                source={{ uri: item.image_url }}
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
+            ) : null}
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+             
+              <Text><Text style={{ fontWeight: 'bold' }}>Description:</Text> {item.description}</Text>
+              <Text><Text style={{ fontWeight: 'bold' }}>Location:</Text> {item.location}</Text>
+              <Text><Text style={{ fontWeight: 'bold' }}>Start Date:</Text> {item.start_date}</Text>
+              <Text><Text style={{ fontWeight: 'bold' }}>End Date:</Text> {item.end_date}</Text>
+              <Text><Text style={{ fontWeight: 'bold' }}>Status:</Text> {item.status}</Text>
+
+              {/* Skills */}
+              {item.skills && item.skills.length > 0 && (
+                <View style={styles.skillsContainer}>
+                  <Text style={styles.skillsTitle}>🛠️ Skills Required:</Text>
+                  <View style={styles.skillBadgesContainer}>
+                    {item.skills.map(skill => (
+                      <Text key={skill.id} style={styles.skillBadge}>💡 {skill.name}</Text>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              <View style={styles.buttons}>
+                <TouchableOpacity style={[styles.btn, styles.detailsBtn]} onPress={() => handleMorePress(item)}>
+                  <Text style={styles.btnText}>Details</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.btn, styles.updateBtn]} onPress={() => handleEdit(item)}>
+                  <Text style={styles.btnText}>Update</Text>
+                </TouchableOpacity>
+
+                {showDeleted ? (
+                  <TouchableOpacity style={[styles.btn, styles.restoreBtn]} onPress={() => handleRestore(item.id)}>
+                    <Text style={styles.btnText}>Restore</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={[styles.btn, styles.deleteBtn]} onPress={() => handleDelete(item.id)}>
+                    <Text style={styles.btnText}>Delete</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          </View>
+        )}
+      />
+
+      {/* Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            {modalType === 'details' && selectedOpportunity && (
+              <ScrollView>
+                <Text style={styles.modalTitle}>{selectedOpportunity.title}</Text>
+                <Text>{selectedOpportunity.description}</Text>
+                <Text>Location: {selectedOpportunity.location}</Text>
+                <Text>Start Date: {selectedOpportunity.start_date}</Text>
+                <Text>End Date: {selectedOpportunity.end_date}</Text>
+                <Text>Status: {selectedOpportunity.status}</Text>
+                {selectedOpportunity.skills && selectedOpportunity.skills.length > 0 && (
+                  <View>
+                    <Text>Skills:</Text>
+                    {selectedOpportunity.skills.map(skill => (
+                      <Text key={skill.id}>- {skill.name}</Text>
+                    ))}
+                  </View>
+                )}
+                <TouchableOpacity
+                  style={[styles.btn, styles.closeBtn]}
+                  onPress={closeModal}
+                >
+                  <Text style={styles.btnText}>Close</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            )}
+
+            {modalType === 'edit' && selectedOpportunity && (
+              <ScrollView>
+                <Text style={styles.modalTitle}>Edit Opportunity</Text>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Title"
+                  value={updatedData.title}
+                  onChangeText={text => setUpdatedData(prev => ({ ...prev, title: text }))}
+                />
+                <TextInput
+                  style={[styles.input, { height: 80 }]}
+                  placeholder="Description"
+                  multiline
+                  value={updatedData.description}
+                  onChangeText={text => setUpdatedData(prev => ({ ...prev, description: text }))}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Location"
+                  value={updatedData.location}
+                  onChangeText={text => setUpdatedData(prev => ({ ...prev, location: text }))}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Start Date (YYYY-MM-DD)"
+                  value={updatedData.start_date}
+                  onChangeText={text => setUpdatedData(prev => ({ ...prev, start_date: text }))}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="End Date (YYYY-MM-DD)"
+                  value={updatedData.end_date}
+                  onChangeText={text => setUpdatedData(prev => ({ ...prev, end_date: text }))}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Status"
+                  value={updatedData.status}
+                  onChangeText={text => setUpdatedData(prev => ({ ...prev, status: text }))}
+                />
+
+                {selectedOpportunity.opportunity_type === 'volunteer' && (
+                  <>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Max Participants"
+                      keyboardType="numeric"
+                      value={updatedData.max_participants}
+                      onChangeText={text => setUpdatedData(prev => ({ ...prev, max_participants: text }))}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Base Points"
+                      keyboardType="numeric"
+                      value={updatedData.base_points}
+                      onChangeText={text => setUpdatedData(prev => ({ ...prev, base_points: text }))}
+                    />
+                  </>
+                )}
+
+                {selectedOpportunity.opportunity_type === 'job' && (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Required Points"
+                    keyboardType="numeric"
+                    value={updatedData.required_points}
+                    onChangeText={text => setUpdatedData(prev => ({ ...prev, required_points: text }))}
+                  />
+                )}
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity style={[styles.btn, styles.saveBtn]} onPress={handleUpdate}>
+                    <Text style={styles.btnText}>Save</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.btn, styles.closeBtn]} onPress={closeModal}>
+                    <Text style={styles.btnText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            )}
+
+            {modalType === 'changeStatus' && selectedOpportunity && (
+              <View>
+                <Text style={styles.modalTitle}>Change Status</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="New Status"
+                  value={newStatus}
+                  onChangeText={setNewStatus}
+                />
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity style={[styles.btn, styles.saveBtn]} onPress={handleChangeStatus}>
+                    <Text style={styles.btnText}>Update</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.btn, styles.closeBtn]} onPress={closeModal}>
+                    <Text style={styles.btnText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+      
     </View>
-  </Modal>
-)}
-  
-
-
-{modalVisible && selectedOpportunity && modalType === 'details' && (
-  <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={closeModal}>
-    <View style={styles.modalContainer}>
-      <View style={styles.modalContent}>
-        <Text style={styles.modalTitle}>Opportunity Details</Text>
-
-        {Object.entries(selectedOpportunity).map(([key, value]) => (
-          <Text key={key} style={styles.modalDetails}>
-            <Text style={styles.bold}>{formatKey(key)}:</Text> {String(value)}
-          </Text>
-        ))}
-
-        <TouchableOpacity style={styles.modalButton} onPress={closeModal}>
-          <Text style={styles.buttonText}>Close</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </Modal>
-)}
-
-
-    </ScrollView>
-    <BottomTabBar
+     <BottomTabBar
   activeTab={activeTab}
   setActiveTab={setActiveTab}
   handleProfilePress={handleProfilePress}
 />
-    </LayoutWithFilters>
+ </LayoutWithFilters>
+    </View>
   );
 };
 
+export default OpportunityList;
 const styles = StyleSheet.create({
-  imageContainer: {
-    position: 'relative',
-  },
-  
-  topButtons: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  
-  iconButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 6,
-    marginLeft: 5,
-  },
-  
-  iconText: {
-    fontSize: 16,
-  },
-  
-  input: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 15,
-    paddingLeft: 10,
-  },
   container: {
-    backgroundColor: '#f9f9f9',
-    padding: 20,
-  },
-  header: {
-    fontSize: 26,
-    fontWeight: '600',
-    color: '#66bb6a',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  card: {
-    backgroundColor: '#E8F5E9',
-    borderRadius: 15,
-    padding: 25,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
-  },
-  image: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 15,
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#e8f5e9',  // أخضر فاتح هادي ومنعش
   },
   title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#34495E',
-    marginBottom: 10,
+    fontSize: 28,
+    fontWeight: '900',
+    marginBottom: 16,
+    color: '#2e7d32', // أخضر داكن للعنوان لتميزه
+    textAlign: 'center',
+    letterSpacing: 1.2,
   },
-  description: {
-    fontSize: 16,
-    color: '#7F8C8D',
-    marginVertical: 12,
-    lineHeight: 22,
-  },
-  details: {
-    fontSize: 15,
-    color: '#2C3E50',
-    marginVertical: 8,
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
-  button: {
-    backgroundColor: '#66bb6a',
+  toggleBtn: {
+    backgroundColor: '#43a047', // أخضر متوسط
     paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    marginTop: 15,
-    alignItems: 'center',
-    shadowColor: '#246113',
-    shadowOpacity: 0.3,
+    paddingHorizontal: 28,
+    borderRadius: 30, // زوايا دائرية كبيرة للمظهر العصري
+    marginBottom: 16,
+    alignSelf: 'center',
+    elevation: 5, // ظل لرفع البوتون بشكل جميل
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  toggleBtnText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.8,
+  },
+  filters: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    gap: 10,
+  },
+  input: {
+    backgroundColor: 'white',
+    borderColor: '#81c784',  // أخضر فاتح للحدود
+    borderWidth: 1.5,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 16,
+    flex: 1,
+    fontSize: 16,
+    color: '#2e7d32',
+    shadowColor: '#4caf50',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    marginBottom: 18,
+    overflow: 'hidden',
+    elevation: 7,
+    shadowColor: '#2e7d32',
+    shadowOpacity: 0.12,
     shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
   },
-  updateButton: {
-    position: 'absolute',
-    top: 10,
-    right: 50,
-   // backgroundColor: '#66bb6a',
+  cardImage: {
+    width: '100%',
+    height: 300,
+  },
+  cardContent: {
+    padding: 16,
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    marginBottom: 8,
+    color: '#1b5e20',
+    letterSpacing: 0.5,
+  },
+  skillsContainer: {
+    marginTop: 12,
+  },
+  skillsTitle: {
+    fontWeight: '700',
+    marginBottom: 6,
+    color: '#388e3c',
+    fontSize: 16,
+  },
+  skillBadgesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  skillBadge: {
+    backgroundColor: '#a5d6a7',
+    color: '#2e7d32',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    marginRight: 8,
+    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    elevation: 2,
+  },
+  buttons: {
+    flexDirection: 'row',
+    marginTop: 16,
+    justifyContent: 'space-around',
+  },
+  btn: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
     borderRadius: 25,
-    padding: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
   },
-  modalContainer: {
+  detailsBtn: {
+    backgroundColor: '#4caf50',
+  },
+  updateBtn: {
+    backgroundColor: '#2e7d32',
+  },
+  deleteBtn: {
+    backgroundColor: '#e53935',
+  },
+  restoreBtn: {
+    backgroundColor: '#43a047',
+  },
+  btnText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 15,
+    letterSpacing: 0.7,
+  },
+  centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  modalContent: {
+  error: {
+    color: '#c62828',
+    fontWeight: '700',
+    fontSize: 16,
+    textAlign: 'center',
+    marginVertical: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(46, 125, 50, 0.45)', // ظل أخضر شفاف
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalContainer: {
     backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-    shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
+    borderRadius: 24,
+    padding: 24,
+    maxHeight: '90%',
+    elevation: 12,
+    shadowColor: '#2e7d32',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#34495E',
-    marginBottom: 15,
-  },
-  modalDetails: {
-    fontSize: 16,
-    color: '#2C3E50',
-    marginBottom: 10,
-  },
-  link: {
-    color: '#1ABC9C',
-    textDecorationLine: 'underline',
-  },
-  modalButton: {
-    backgroundColor: '#66bb6a',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  deleteButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    //backgroundColor: '#388E3C',
-    borderRadius: 25,
-    padding: 15,
-    shadowColor: '#388E3C',
-    shadowOpacity: 0.7,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 8,
-  },
-  deleteText: {
-    fontWeight: 'bold',
-    fontSize: 20,
+    fontSize: 26,
+    fontWeight: '900',
+    marginBottom: 18,
+    color: '#1b5e20',
     textAlign: 'center',
+    letterSpacing: 1,
   },
-  errorText: {
-    color: 'red',
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 20,
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 24,
   },
-  updateText: {
-    color: '#fff', // النص سيكون باللون الأبيض ليظهر بوضوح على الخلفية الخضراء
-    fontWeight: 'bold',
-    fontSize: 24,
-  }, 
-
+  saveBtn: {
+    backgroundColor: '#388e3c',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 30,
+  },
+  closeBtn: {
+    backgroundColor: '#9e9e9e',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 30,
+  },
 });
 
-export default OpportunitiesList;

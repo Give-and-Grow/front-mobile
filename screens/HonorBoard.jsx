@@ -13,7 +13,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import DropDownPicker from 'react-native-dropdown-picker';
 import ipAdd from "../scripts/helpers/ipAddress";
 
-
+import BottomTabBar from './BottomTabBar';
 const HonorBoard = () => {
   const [period, setPeriod] = useState('all');
   const [year, setYear] = useState(new Date().getFullYear());
@@ -91,8 +91,12 @@ const HonorBoard = () => {
     setShowConfetti(true);
     fetchVolunteers();
   }, [period, year, month]);
-
+ const handleProfilePress = () => {
+    navigation.navigate('HonorBoard');
+  };
+   const [activeTab, setActiveTab] = useState('hone');
   return (
+     <View style={{ flex: 1 }}>
     <View style={styles.container}>
       {showConfetti && (
         <ConfettiCannon
@@ -189,7 +193,15 @@ const HonorBoard = () => {
             ))
           )}
         </ScrollView>
+        
       )}
+      
+    </View>
+    <BottomTabBar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              handleProfilePress={handleProfilePress}
+            />
     </View>
   );
 };
@@ -197,8 +209,8 @@ const HonorBoard = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E8F5E9',
-    padding: 16,
+    padding: 20,
+    backgroundColor: '#f9fafb',
   },
   title: {
     fontSize: 28,

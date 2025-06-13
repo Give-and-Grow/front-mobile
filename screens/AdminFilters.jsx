@@ -21,11 +21,18 @@ const AdminFilters = ({ initialFilter = null, onFilterSelect }) => {
       icon: 'check-decagram',
     },
     {
-      label: 'Manage Organizations',
+      label: 'DiscountCodeManager ',
       value: 'manage_orgs',
-      screen: 'adminfeatchallorganizationandDelete',
-      icon: 'account-multiple',
+      screen: 'DiscountCodeManager',
+      icon: 'sale',
     },
+    {
+  label: 'Ads Manager',
+  value: 'manage_ads',
+  screen: 'AdsManagerScreen',
+  icon: 'bullhorn', // أو جرّب megaphone أو newspaper
+},
+
   ];
 
   const handleSelect = (value, screen) => {
