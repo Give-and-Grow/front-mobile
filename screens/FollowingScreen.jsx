@@ -4,6 +4,8 @@ import {
   Image, Modal,Button
 } from 'react-native';
 import axios from 'axios';
+import Svg, { Circle, Path } from 'react-native-svg';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import ipAdd from '../scripts/helpers/ipAddress';
@@ -12,7 +14,8 @@ import BottomTabBar from './BottomTabBar';
 import TopTabBar from './TopTabBar';
 const FollowingScreen = ({ navigation }) => {
   const [liked, setLiked] = useState(false);
-  
+  const [showSkills, setShowSkills] = useState(false);
+
   const toggleLike = () => {
     setLiked(!liked);
   };
@@ -198,6 +201,27 @@ const FollowingScreen = ({ navigation }) => {
             </View>
           )}
           <Text style={styles.usernameBig}>{userData?.username}</Text>
+           <View style={styles.row}>
+      <Text style={styles.name}>
+        {userData?.full_name || 'User'}
+      </Text>
+
+    {userData?.identity_verification_status === 'approved' && (
+  <View style={styles.verifiedContainer}>
+    <Svg width={24} height={24} viewBox="0 0 64 64">
+      <Circle cx="32" cy="32" r="30" fill="#2e7d32" />
+      <Path
+        d="M20 33 L28 41 L44 25"
+        stroke="white"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
+  </View>
+)}
+    </View>
           <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
             <Ionicons name="settings-outline" size={24} color="#333" />
           </TouchableOpacity>
@@ -218,12 +242,30 @@ const FollowingScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
+          
+
           <View style={styles.bioContainer}>
             <View style={styles.bioRow}>
               <Icon name="edit-note" size={20} color="#2e7d32" style={styles.bioIcon} />
               <Text style={styles.bioText}>{userData?.bio || 'No bio available'}</Text>
             </View>
+          
           </View>
+          <TouchableOpacity onPress={() => setShowSkills(!showSkills)} style={styles.skillsToggle}>
+  <Text style={styles.skillsTitle}>
+    Skills {showSkills ? '▲' : '▼'}
+  </Text>
+</TouchableOpacity>
+{showSkills && (
+  <View style={styles.skillsList}>
+    {userData.skills.map((skill) => (
+      <View key={skill.id} style={styles.skillBadge}>
+        <Text style={styles.skillText}>{skill.name}</Text>
+      </View>
+    ))}
+  </View>
+)}
+
         </View>
       </View>
 
@@ -508,7 +550,53 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 5,
   },
+  skillsContainer: {
+  marginTop: 15,
+},
+
+skillsTitle: {
+  fontWeight: 'bold',
+  fontSize: 16,
+  marginBottom: 8,
+  color: '#2e7d32',
+},
+
+skillsList: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 8,  // في RN ما يدعم gap بشكل رسمي، بدلها استخدم margin على العناصر
+},
+
+skillBadge: {
+  backgroundColor: '#d1fae5',
+  paddingVertical: 6,
+  paddingHorizontal: 12,
+  borderRadius: 20,
+  marginRight: 8,
+  marginBottom: 8,
+},
+
+skillText: {
+  color: '#065f46',
+  fontWeight: '600',
+},
   
+noSkillsText: {
+  fontStyle: 'italic',
+  color: '#999',
+},
+ row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  verifiedContainer: {
+    marginLeft: 8,
+  },
 });
 
 export default FollowingScreen;

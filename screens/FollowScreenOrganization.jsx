@@ -4,6 +4,7 @@ import {
   Image, Modal,Button
 } from 'react-native';
 import axios from 'axios';
+import Svg, { Circle, Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import ipAdd from '../scripts/helpers/ipAddress';
@@ -195,8 +196,11 @@ const FollowScreenOrganization = ({ navigation }) => {
           ) : (
             <View style={styles.avatarPlaceholderBig}>
               <Text style={styles.avatarTextBig}>{userData?.username?.[0].toUpperCase()}</Text>
+              
+               
             </View>
           )}
+          
           <Text style={styles.usernameBig}>{userData?.username}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('ProfileOrganizationScreen')}>
             <Ionicons name="settings-outline" size={24} color="#333" />
@@ -507,7 +511,9 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 5,
   },
-  
+  verifiedContainer: {
+    marginLeft: 8,
+  },
 });
 
 export default FollowScreenOrganization;

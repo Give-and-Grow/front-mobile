@@ -71,6 +71,9 @@ import DiscountCodeManager from 'C:/Users/user/Videos/SOFT/front-mobile/screens/
 import AdsManagerScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdsManagerScreen.jsx';
 import InviteUsersScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/InviteUsersScreen.jsx';
 import InviteFrame from 'C:/Users/user/Videos/SOFT/front-mobile/screens/InviteFrame.jsx';
+import HelpScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/HelpScreen.jsx';
+import AdsScreen from 'C:/Users/user/Videos/SOFT/front-mobile/screens/AdsScreen.jsx';
+import SkillsSection from 'C:/Users/user/Videos/SOFT/front-mobile/screens/SkillsSection.jsx';
 const Stack = createStackNavigator();
 
 const Index = () => {
@@ -83,7 +86,8 @@ const Index = () => {
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator initialRouteName="welcome">
         <Stack.Screen name="welcome" component={WelcomeScreen} />
-        <Stack.Screen name="LoginScreen" component={LoginScreen} />
+        <Stack.Screen name="HelpScreen" component={HelpScreen} />
+          <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name="SinupScreen" component={SinupScreen} />
         <Stack.Screen name="homepage" component={homepage} />
         <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
@@ -142,6 +146,8 @@ const Index = () => {
 <Stack.Screen name="AdsManagerScreen" component={AdsManagerScreen} /> 
                    <Stack.Screen name="InviteUsersScreen" component={InviteUsersScreen} /> 
                      <Stack.Screen name="InviteFrame" component={InviteFrame} /> 
+                       <Stack.Screen name="AdsScreen" component={AdsScreen} /> 
+                        <Stack.Screen name="SkillsSection" component={SkillsSection} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );

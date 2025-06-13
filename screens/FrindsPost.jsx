@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, TouchableOpacity , Image } from 'react-native';
+import { View, FlatList, StyleSheet, RefreshControl, TouchableOpacity , Image , ScrollView,} from 'react-native';
 import { Card, Paragraph, Avatar, Text } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
@@ -201,6 +201,7 @@ function PostCard({ item }) {
   };
 
   return (
+    <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 80}}>
     <Card style={styles.card} elevation={3}>
       <Card.Title
         title={
@@ -236,6 +237,19 @@ function PostCard({ item }) {
           />
         )}
       />
+{item.images && item.images.length > 0 && (
+  <View style={styles.imagesContainer}>
+    {item.images.map((imgUrl, index) => (
+      <View key={index} style={styles.imageWrapper}>
+        <Image
+          source={{ uri: imgUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      </View>
+    ))}
+  </View>
+)}
 
       {item.content && (
         <Card.Content>
@@ -337,6 +351,7 @@ function PostCard({ item }) {
         </View>
       )}
     </Card>
+    </ScrollView>
   );
 }
 
@@ -438,6 +453,30 @@ const styles = StyleSheet.create({
     color: '#777',
     marginTop: 2,
     textAlign: 'right',
+  },
+    imagesContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 16, // أو استخدم marginBottom داخل imageWrapper
+    marginBottom: 16,
+  },
+  imageWrapper: {
+    maxHeight: 300,
+    overflow: 'hidden',
+    borderRadius: 10,
+    backgroundColor: '#f5f5f5',
+    width: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginBottom: 10,
+  },
+  image: {
+    width: '100%',
+    height: 300,
+    borderRadius: 10,
   },
 });
 

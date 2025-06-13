@@ -119,9 +119,21 @@ const handleNotificationPress = (notification) => {
   return (
    
      <View style={{ flex: 1 }}>
-       <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 100 }}>
+      
     <View style={styles.container}>
-      <Text style={styles.header}>Notifications ({unseenCount} new)</Text>
+<View style={styles.headerRow}>
+  <Text style={styles.header}>Notifications ({unseenCount} new)</Text>
+  <Button
+    icon="check-circle"
+    mode="contained"
+    onPress={markAllAsSeen}
+    style={styles.topButton}
+    labelStyle={styles.topButtonLabel}
+    compact
+  >
+    Mark All
+  </Button>
+</View>
 
       <FlatList
         data={notifications}
@@ -161,11 +173,9 @@ const handleNotificationPress = (notification) => {
   </View>
 )}
 
-      <Button mode="contained" onPress={markAllAsSeen} style={styles.button}>
-        Mark All as Seen
-      </Button>
+  
     </View>
-     </ScrollView>
+   
      <BottomTabBar
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -177,10 +187,11 @@ const handleNotificationPress = (notification) => {
 }
 
 const styles = StyleSheet.create({
- container: {
+  container: {
     flex: 1,
-    backgroundColor: '#f0fdf4', // لون خلفية أفتح ومريح للعين
-    padding: 16,
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 16,
+    paddingTop: 20, // أصغر
   },
   header: {
     fontSize: 24,
@@ -267,6 +278,26 @@ discountImage: {
   height: 200,
   borderRadius: 10,
   marginBottom: 10,
+},
+topActionContainer: {
+  flexDirection: 'row',
+  justifyContent: 'flex-end', // لتكون على الطرف الأيمن
+  alignItems: 'center',
+  marginBottom: 10,
+  paddingHorizontal: 10,
+},
+
+topButton: {
+  backgroundColor: '#2e7d32', // أخضر غامق
+  borderRadius: 20,
+  paddingHorizontal: 10,
+  paddingVertical: 2,
+  elevation: 2,
+},
+
+topButtonLabel: {
+  color: 'white',
+  fontWeight: 'bold',
 },
 
 
