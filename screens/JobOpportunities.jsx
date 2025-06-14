@@ -223,12 +223,13 @@ export default function JobOpportunities() {
           </View>
         ))
       )}
-        <BottomTabBar
+       
+    </ScrollView>
+     <BottomTabBar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         handleProfilePress={handleProfilePress}
       />
-    </ScrollView>
     </ScreenLayout>
   );
 }

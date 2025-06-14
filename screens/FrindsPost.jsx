@@ -94,14 +94,7 @@ const FrindsPost = () => {
 
       {/* Bottom Tab Bar خارج المنشورات */}
       <View>
-      <BottomTabBar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        handleProfilePress={() => {
-          // استدعاء التنقل هنا إذا كان موجوداً، مثال:
-          navigation.navigate('FrindsPost');
-        }}
-      />
+    
       </View>
     </View>
   );
@@ -201,7 +194,7 @@ function PostCard({ item }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 80}}>
+    <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1, paddingBottom: 100 }}>
     <Card style={styles.card} elevation={3}>
       <Card.Title
         title={
@@ -352,6 +345,7 @@ function PostCard({ item }) {
       )}
     </Card>
     </ScrollView>
+    
   );
 }
 
