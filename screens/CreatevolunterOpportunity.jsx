@@ -91,7 +91,7 @@ const handleSubmit = async () => {
     start_date: startDate.trim(),
     end_date: endDate.trim(),
     status: 'open',
-    image_url: imageUrl,
+   
     application_link: applicationLink,
     contact_email: contactEmail.trim(),
     opportunity_type: 'volunteer',

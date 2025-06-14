@@ -200,7 +200,7 @@ const FollowingScreen = ({ navigation }) => {
               <Text style={styles.avatarTextBig}>{userData?.username?.[0].toUpperCase()}</Text>
             </View>
           )}
-          <Text style={styles.usernameBig}>{userData?.username}</Text>
+         
            <View style={styles.row}>
       <Text style={styles.name}>
         {userData?.full_name || 'User'}
